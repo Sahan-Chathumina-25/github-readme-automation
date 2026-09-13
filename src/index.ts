@@ -6,12 +6,49 @@ import { updateGitHubReadme } from './github/update.js';
 import { startPreviewServer } from './utils/preview.js';
 import { writeFileSync, readFileSync, existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
+import type { ThemeConfig, SkillPercentages } from './theme.js';
+import { DEFAULT_THEME } from './theme.js';
+import { generateHeroBanner, generateSkillCircleRow, generateNetworkTopology, generateFooterAnimation } from './svg/index.js';
 
-const GENERATED_DIR = join(process.cwd(), 'generated');
+const PROJECT_ROOT = process.cwd();
+const GENERATED_DIR = join(PROJECT_ROOT, 'generated');
 const GENERATED_README = join(GENERATED_DIR, 'README.md');
+const ASSETS_DIR = join(PROJECT_ROOT, 'assets');
+
+function generateAssets(theme: ThemeConfig, skillPcts: SkillPercentages): void {
+  if (!existsSync(ASSETS_DIR)) {
+    mkdirSync(ASSETS_DIR, { recursive: true });
+  }
+
+  const banner = generateHeroBanner('Sahan Chathumina', 'Cybersecurity | Network Engineering | Linux | Ethical Hacking', theme);
+  writeFileSync(join(ASSETS_DIR, 'profile-banner.svg'), banner, 'utf-8');
+  console.log('  Generated assets/profile-banner.svg');
+
+  const skillCircles = generateSkillCircleRow(
+    [
+      { label: 'Cybersecurity', percentage: skillPcts.cybersecurity },
+      { label: 'Networking', percentage: skillPcts.networking },
+      { label: 'Linux', percentage: skillPcts.linux },
+      { label: 'Programming', percentage: skillPcts.programming },
+    ],
+    theme
+  );
+  writeFileSync(join(ASSETS_DIR, 'skill-circles.svg'), skillCircles, 'utf-8');
+  console.log('  Generated assets/skill-circles.svg');
+
+  const topology = generateNetworkTopology(theme);
+  writeFileSync(join(ASSETS_DIR, 'network-topology.svg'), topology, 'utf-8');
+  console.log('  Generated assets/network-topology.svg');
+
+  const footer = generateFooterAnimation(theme);
+  writeFileSync(join(ASSETS_DIR, 'footer-animation.svg'), footer, 'utf-8');
+  console.log('  Generated assets/footer-animation.svg');
+}
 
 async function main() {
-  const command = process.argv[2] ?? 'generate';
+  const args = process.argv.slice(2);
+  const command = args[0] ?? 'generate';
+  const dryRun = args.includes('--dry-run');
 
   const token = process.env.GITHUB_TOKEN;
   const username = process.env.GITHUB_USERNAME ?? 'Sahan-Chathumina-25';
@@ -21,6 +58,12 @@ async function main() {
       console.log('Loading profile configuration...');
       const config = loadConfig();
 
+      const theme: ThemeConfig = (config as any).theme ?? DEFAULT_THEME;
+      const skillPcts: SkillPercentages = (config as any).skillPercentages ?? { cybersecurity: 45, networking: 50, linux: 55, programming: 35 };
+
+      console.log('Generating visual assets...');
+      generateAssets(theme, skillPcts);
+
       let githubData = undefined;
       if (token) {
         console.log('Fetching GitHub data...');
@@ -29,31 +72,32 @@ async function main() {
           console.log(`  Found ${githubData.repositories.length} repositories, ${githubData.totalStars} total stars`);
         } catch (err) {
           console.warn(`  Warning: Could not fetch GitHub data: ${(err as Error).message}`);
-          console.warn('  Continuing with config-only data...');
         }
       } else {
         console.log('No GITHUB_TOKEN found. Skipping GitHub API calls.');
       }
 
-      console.log('Generating README...');
-      const readme = generateREADME(config, githubData);
+      console.log('Generating cinematic README...');
+      const readme = generateREADME(config, githubData, { theme, skillPercentages: skillPcts });
 
       console.log('Validating README...');
       const validation = validateMarkdown(readme);
 
       if (validation.warnings.length > 0) {
         console.log('Warnings:');
-        for (const w of validation.warnings) {
-          console.log(`  - ${w}`);
-        }
+        for (const w of validation.warnings) console.log(`  - ${w}`);
       }
 
       if (!validation.valid) {
         console.error('Validation failed:');
-        for (const e of validation.errors) {
-          console.error(`  - ${e}`);
-        }
+        for (const e of validation.errors) console.error(`  - ${e}`);
         process.exit(1);
+      }
+
+      if (dryRun) {
+        console.log('Dry run — not writing files.');
+        console.log(`README size: ${(readme.length / 1024).toFixed(1)} KB, ${readme.split('\n').length} lines`);
+        break;
       }
 
       if (!existsSync(GENERATED_DIR)) {
@@ -76,18 +120,13 @@ async function main() {
       }
       const content = readFileSync(GENERATED_README, 'utf-8');
       const result = validateMarkdown(content);
-
       if (result.errors.length > 0) {
         console.error('Errors:');
-        for (const e of result.errors) {
-          console.error(`  - ${e}`);
-        }
+        for (const e of result.errors) console.error(`  - ${e}`);
       }
       if (result.warnings.length > 0) {
         console.warn('Warnings:');
-        for (const w of result.warnings) {
-          console.warn(`  - ${w}`);
-        }
+        for (const w of result.warnings) console.warn(`  - ${w}`);
       }
       console.log(result.valid ? 'Validation passed.' : 'Validation failed.');
       break;
@@ -105,26 +144,25 @@ async function main() {
     case 'update': {
       if (!token) {
         console.error('GITHUB_TOKEN is required for updating README.');
-        console.error('Set it in your .env file or environment.');
         process.exit(1);
       }
 
       console.log('Generating README for update...');
       const config = loadConfig();
+      const theme: ThemeConfig = (config as any).theme ?? DEFAULT_THEME;
+      const skillPcts: SkillPercentages = (config as any).skillPercentages ?? { cybersecurity: 45, networking: 50, linux: 55, programming: 35 };
+
       let githubData = undefined;
       try {
         githubData = await fetchGitHubData(config.profile.username, token);
-      } catch {
-        // Continue without GitHub data
-      }
-      const readme = generateREADME(config, githubData);
+      } catch { /* continue */ }
+
+      generateAssets(theme, skillPcts);
+      const readme = generateREADME(config, githubData, { theme, skillPercentages: skillPcts });
 
       const validation = validateMarkdown(readme);
       if (!validation.valid) {
         console.error('Cannot update: README validation failed.');
-        for (const e of validation.errors) {
-          console.error(`  - ${e}`);
-        }
         process.exit(1);
       }
 
@@ -137,7 +175,7 @@ async function main() {
 
     default:
       console.error(`Unknown command: ${command}`);
-      console.log('Usage: ts-node src/index.ts [generate|validate|preview|update]');
+      console.log('Usage: ts-node src/index.ts [generate|validate|preview|update] [--dry-run]');
       process.exit(1);
   }
 }

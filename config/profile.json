@@ -7,6 +7,27 @@
     "about": "Building secure systems. Exploring networks. Learning cybersecurity through hands-on projects.\n\nI am an undergraduate studying Ethical Hacking & Network Security with a passion for understanding how systems work and how to secure them. I spend my time in Linux labs, building networks, solving CTF challenges, and writing scripts to automate security tasks.\n\n- Exploring network security and system hardening\n- Building hands-on Linux and networking labs\n- Solving CTF challenges to sharpen my skills\n- Writing Python and Bash automation scripts"
   },
 
+  "theme": {
+    "background": "#05070A",
+    "surface": "#0B1117",
+    "surfaceAlt": "#111820",
+    "primary": "#00D9FF",
+    "secondary": "#1479FF",
+    "highlight": "#EAF7FF",
+    "muted": "#7F95A5",
+    "border": "#1A2736",
+    "glow": "rgba(0,217,255,0.15)",
+    "success": "#00FF88",
+    "warning": "#FFB800"
+  },
+
+  "skillPercentages": {
+    "cybersecurity": 45,
+    "networking": 50,
+    "linux": 55,
+    "programming": 35
+  },
+
   "education": [
     {
       "degree": "BSc (Hons) in Ethical Hacking & Network Security",
