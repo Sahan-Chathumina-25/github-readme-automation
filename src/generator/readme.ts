@@ -1,7 +1,6 @@
 import type { ProfileConfig, GitHubData, SkillItem } from '../types.js';
 import type { ThemeConfig, SkillPercentages, FeaturedScoreWeights } from '../theme.js';
 import { DEFAULT_THEME, DEFAULT_FEATURED_WEIGHTS } from '../theme.js';
-import { generateSectionDivider } from '../svg/index.js';
 
 interface GeneratorOptions {
   theme?: ThemeConfig;
@@ -27,8 +26,8 @@ function linkBadge(label: string, url: string, color: string): string {
   return `[![${label}](https://img.shields.io/badge/${encodeURIComponent(label)}-${encodeURIComponent(color)}?style=flat&logo=${label.toLowerCase()}&logoColor=white)](${url})`;
 }
 
-function divider(theme: ThemeConfig): string {
-  return `\n\n<div align="center">${generateSectionDivider(theme)}</div>\n\n`;
+function divider(): string {
+  return `\n\n<div align="center"><img src="assets/section-divider.svg" alt="" width="800" height="20"/></div>\n\n`;
 }
 
 export function generateREADME(
@@ -45,18 +44,18 @@ export function generateREADME(
   sections.push(renderTerminal(config));
   sections.push(renderSkillCircles());
   sections.push(renderSkills(config));
-  sections.push(divider(theme));
+  sections.push(divider());
   sections.push(renderNetworkArchitecture());
   sections.push(renderFeaturedProjects(config, githubData, theme));
-  sections.push(divider(theme));
+  sections.push(divider());
   sections.push(renderCyberLabs(config));
   sections.push(renderLinuxLabs(config));
   sections.push(renderNetworkingLabs(config));
-  sections.push(divider(theme));
+  sections.push(divider());
   sections.push(renderCertifications(config));
   sections.push(renderEducation(config));
   sections.push(renderCurrentlyLearning(config));
-  sections.push(divider(theme));
+  sections.push(divider());
   sections.push(renderGitHubStats(config, githubData, theme));
   sections.push(renderConnect(config));
   sections.push(renderFooter());

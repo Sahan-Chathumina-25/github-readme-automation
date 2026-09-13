@@ -21,6 +21,7 @@ import {
   generateNetworkLabs,
   generateCertifications,
   generateFooter,
+  generateSectionDivider,
 } from './svg/index.js';
 import type { ProfileConfig } from './types.js';
 
@@ -53,6 +54,11 @@ function generateAssets(config: ProfileConfig, theme: ThemeConfig, skillPcts: Sk
   const footerAnim = generateFooterAnimation(theme);
   writeFileSync(join(ASSETS_DIR, 'footer-animation.svg'), footerAnim, 'utf-8');
   console.log('  Generated assets/footer-animation.svg');
+
+  // Section divider
+  const sectionDivider = generateSectionDivider(theme);
+  writeFileSync(join(ASSETS_DIR, 'section-divider.svg'), sectionDivider, 'utf-8');
+  console.log('  Generated assets/section-divider.svg');
 
   // About card
   const aboutCard = generateAboutCard(config);
