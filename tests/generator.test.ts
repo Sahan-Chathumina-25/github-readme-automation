@@ -56,9 +56,9 @@ describe('Cinematic README Generator', () => {
     expect(readme).toContain('Linux');
   });
 
-  it('contains projects section', () => {
+  it('contains featured projects section', () => {
     const readme = generateREADME(config, undefined, { theme, skillPercentages: skillPcts });
-    expect(readme).toContain('## Projects');
+    expect(readme).toContain('## Featured Projects');
     expect(readme).toContain('Network Security Lab');
   });
 

@@ -83,7 +83,6 @@ export function generateREADME(
   sections.push(divider(theme));
   sections.push(renderNetworkTopology(theme));
   sections.push(renderFeaturedProjects(config, githubData, theme, weights));
-  sections.push(renderProjects(config, theme));
   sections.push(divider(theme));
   sections.push(renderCybersecurityLab(config, theme));
   sections.push(renderLinuxLabs(config, theme));
@@ -236,24 +235,6 @@ ${project.github ? `\n<sub>[Repository](${project.github})</sub>` : ''}
   });
 
   md += `</tr>\n</table>\n`;
-  return md;
-}
-
-function renderProjects(config: ProfileConfig, theme: ThemeConfig): string {
-  if (config.projects.length === 0) return '';
-
-  let md = `## Projects\n\n`;
-
-  for (const project of config.projects) {
-    const techStr = project.technologies.join(' • ');
-    md += `### ${project.name}\n\n`;
-    md += `${project.description}\n\n`;
-    md += `> **Tech:** ${techStr}\n\n`;
-    md += `> **Status:** ${statusBadge(project.status)}\n\n`;
-    if (project.github) md += `[View on GitHub](${project.github})\n\n`;
-    md += `---\n\n`;
-  }
-
   return md;
 }
 
