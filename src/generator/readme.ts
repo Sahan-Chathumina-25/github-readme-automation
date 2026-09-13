@@ -9,7 +9,9 @@ import {
   generateNetworkTopology,
   generateFooterAnimation,
   generateSectionDivider,
+  generateAboutSection,
 } from '../svg/index.js';
+import type { AboutSection } from '../svg/index.js';
 
 interface GeneratorOptions {
   theme?: ThemeConfig;
@@ -129,12 +131,22 @@ function renderTerminal(config: ProfileConfig, theme: ThemeConfig): string {
 }
 
 function renderAbout(config: ProfileConfig, theme: ThemeConfig): string {
-  const about = config.profile.about ?? 'Building secure systems. Exploring networks. Learning cybersecurity through hands-on projects.';
+  const data: AboutSection = {
+    name: config.profile.name,
+    tagline: config.profile.headline,
+    focus: ['Cybersecurity', 'Network Engineering', 'Linux', 'Ethical Hacking'],
+    stats: [
+      { label: 'Focus', value: 'Security & Networks' },
+      { label: 'Status', value: 'Learning & Building' },
+      { label: 'Stack', value: 'Linux • Python • Bash' },
+    ],
+  };
+
   return `<div align="center">
 
 ## About Me
 
-${about}
+${generateAboutSection(data, theme)}
 
 </div>`;
 }
