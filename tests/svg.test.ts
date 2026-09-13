@@ -1,68 +1,75 @@
 import { describe, it, expect } from 'vitest';
-import { generateHeroBanner } from '../src/svg/hero.js';
-import { generateSkillCircle, generateSkillCircleRow } from '../src/svg/skills.js';
-import { generateLanguageBars } from '../src/svg/languages.js';
-import { generateTimeline } from '../src/svg/timeline.js';
-import { generateNetworkTopology, generateFooterAnimation, generateSectionDivider } from '../src/svg/effects.js';
+import { generateTerminalSection } from '../src/svg/terminal.js';
+import { generateLabCards, generateCtfCards } from '../src/svg/labcards.js';
+import { generateAdvancedTimeline } from '../src/svg/advanced-timeline.js';
+import { generateAnimatedFooter } from '../src/svg/footer.js';
+import { generateAboutSection } from '../src/svg/about.js';
 import { DEFAULT_THEME } from '../src/theme.js';
 
-describe('SVG Generation', () => {
+describe('New SVG Components', () => {
   const theme = DEFAULT_THEME;
 
-  it('generates hero banner', () => {
-    const svg = generateHeroBanner('Test Name', 'Cyber | Linux', theme);
+  it('generates terminal section', () => {
+    const svg = generateTerminalSection('sahan', 'cyberlab', ['Cyber', 'Linux'], ['ONLINE'], theme);
     expect(svg).toContain('<svg');
-    expect(svg).toContain('TEST NAME');
-    expect(svg).toContain('CYBER');
-    expect(svg).toContain('</svg>');
+    expect(svg).toContain('whoami');
+    expect(svg).toContain('sahan@cyberlab');
+    expect(svg).toContain('ONLINE');
   });
 
-  it('generates skill circle', () => {
-    const svg = generateSkillCircle({ label: 'Test', percentage: 75 }, theme);
-    expect(svg).toContain('75%');
+  it('generates lab cards', () => {
+    const svg = generateLabCards(
+      [{ name: 'SSH Lab', technology: ['Linux', 'SSH'], objective: 'Test', status: 'Completed' }],
+      theme,
+      'Linux Labs'
+    );
+    expect(svg).toContain('Linux Labs');
+    expect(svg).toContain('SSH Lab');
+    expect(svg).toContain('LAB 01');
+  });
+
+  it('returns empty for empty labs', () => {
+    expect(generateLabCards([], theme, 'Test')).toBe('');
+  });
+
+  it('generates CTF cards', () => {
+    const svg = generateCtfCards(
+      [{ platform: 'TryHackMe', category: 'Web', difficulty: 'Easy', skillsLearned: ['XSS'] }],
+      theme
+    );
+    expect(svg).toContain('Cybersecurity Lab');
+    expect(svg).toContain('Web');
+    expect(svg).toContain('CTF 01');
+  });
+
+  it('generates advanced timeline', () => {
+    const svg = generateAdvancedTimeline(
+      [{ year: '2026', title: 'Cert', subtitle: 'Provider', status: 'Completed' }],
+      theme,
+      'Certifications'
+    );
+    expect(svg).toContain('Certifications');
+    expect(svg).toContain('2026');
+    expect(svg).toContain('Cert');
+    expect(svg).toContain('COMPLETED');
+  });
+
+  it('generates animated footer', () => {
+    const svg = generateAnimatedFooter(theme);
+    expect(svg).toContain('<svg');
+    expect(svg).toContain('ONLINE');
+    expect(svg).toContain('BUILD');
+    expect(svg).toContain('LEARN');
+    expect(svg).toContain('SECURE');
+  });
+
+  it('generates about section', () => {
+    const svg = generateAboutSection(
+      { name: 'Test', tagline: 'Cyber', stats: [{ label: 'A', value: 'B' }], focus: ['Linux'] },
+      theme
+    );
     expect(svg).toContain('Test');
-  });
-
-  it('generates skill circle row', () => {
-    const svg = generateSkillCircleRow(
-      [{ label: 'A', percentage: 50 }, { label: 'B', percentage: 80 }],
-      theme
-    );
-    expect(svg).toContain('50%');
-    expect(svg).toContain('80%');
-  });
-
-  it('generates language bars', () => {
-    const svg = generateLanguageBars(
-      [{ name: 'Python', percentage: 60 }, { name: 'Bash', percentage: 40 }],
-      theme
-    );
-    expect(svg).toContain('Python');
-    expect(svg).toContain('60%');
-  });
-
-  it('generates timeline', () => {
-    const svg = generateTimeline(
-      [{ year: '2024', title: 'Degree', subtitle: 'University', status: 'In Progress' }],
-      theme
-    );
-    expect(svg).toContain('2024');
-    expect(svg).toContain('Degree');
-  });
-
-  it('generates network topology', () => {
-    const svg = generateNetworkTopology(theme);
-    expect(svg).toContain('INTERNET');
-    expect(svg).toContain('FIREWALL');
-  });
-
-  it('generates footer animation', () => {
-    const svg = generateFooterAnimation(theme);
-    expect(svg).toContain('<svg');
-  });
-
-  it('generates section divider', () => {
-    const svg = generateSectionDivider(theme);
-    expect(svg).toContain('<svg');
+    expect(svg).toContain('Cyber');
+    expect(svg).toContain('Linux');
   });
 });

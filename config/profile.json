@@ -55,6 +55,12 @@
       "provider": "Cisco",
       "status": "In Progress",
       "year": "2026"
+    },
+    {
+      "name": "Diploma in English",
+      "provider": "Academy - English in Seven Boxes",
+      "status": "Completed",
+      "year": "2025"
     }
   ],
 
@@ -101,7 +107,8 @@
       { "name": "JavaScript", "level": "Learning" },
       { "name": "HTML/CSS", "level": "Practicing" },
       { "name": "PHP", "level": "Learning" },
-      { "name": "MySQL", "level": "Learning" }
+      { "name": "MySQL", "level": "Learning" },
+      { "name": "Full Stack Development", "level": "Learning" }
     ],
     "tools": [
       { "name": "Git", "level": "Practicing" },

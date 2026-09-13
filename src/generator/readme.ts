@@ -5,13 +5,16 @@ import {
   generateHeroBanner,
   generateSkillCircleRow,
   generateLanguageBars,
-  generateTimeline,
   generateNetworkTopology,
-  generateFooterAnimation,
   generateSectionDivider,
   generateAboutSection,
+  generateTerminalSection,
+  generateLabCards,
+  generateCtfCards,
+  generateAdvancedTimeline,
+  generateAnimatedFooter,
 } from '../svg/index.js';
-import type { AboutSection } from '../svg/index.js';
+import type { AboutSection, LabCard, AdvancedTimelineItem } from '../svg/index.js';
 
 interface GeneratorOptions {
   theme?: ThemeConfig;
@@ -50,29 +53,6 @@ export function generateREADME(
   const skillPcts = options.skillPercentages ?? { cybersecurity: 45, networking: 50, linux: 55, programming: 35 };
   const weights = options.featuredWeights ?? DEFAULT_FEATURED_WEIGHTS;
 
-  const assets: string[] = [];
-
-  assets.push(generateHeroBanner(config.profile.name, config.profile.headline, theme));
-  assets.push(generateSkillCircleRow(
-    [
-      { label: 'Cybersecurity', percentage: skillPcts.cybersecurity },
-      { label: 'Networking', percentage: skillPcts.networking },
-      { label: 'Linux', percentage: skillPcts.linux },
-      { label: 'Programming', percentage: skillPcts.programming },
-    ],
-    theme
-  ));
-  assets.push(generateNetworkTopology(theme));
-  assets.push(generateFooterAnimation(theme));
-
-  if (githubData && Object.keys(githubData.topLanguages).length > 0) {
-    const total = Object.values(githubData.topLanguages).reduce((a, b) => a + b, 0);
-    const langs = Object.entries(githubData.topLanguages)
-      .slice(0, 6)
-      .map(([name, count]) => ({ name, percentage: Math.round((count / total) * 100) }));
-    assets.push(generateLanguageBars(langs, theme));
-  }
-
   const sections: string[] = [];
 
   sections.push(renderHero(config, theme));
@@ -84,7 +64,7 @@ export function generateREADME(
   sections.push(renderNetworkTopology(theme));
   sections.push(renderFeaturedProjects(config, githubData, theme, weights));
   sections.push(divider(theme));
-  sections.push(renderCybersecurityLab(config, theme));
+  sections.push(renderCtfCards(config, theme));
   sections.push(renderLinuxLabs(config, theme));
   sections.push(renderNetworkingLabs(config, theme));
   sections.push(divider(theme));
@@ -108,23 +88,10 @@ function renderHero(config: ProfileConfig, theme: ThemeConfig): string {
 }
 
 function renderTerminal(config: ProfileConfig, theme: ThemeConfig): string {
+  const hostname = 'cyberlab';
   return `<div align="center">
 
-\`\`\`
-┌─────────────────────────────────────────────────────┐
-│  $ whoami                                            │
-│  ${config.profile.name.toLowerCase().replace(/\s/g, '.')}@cyberlab                        │
-│                                                      │
-│  $ focus                                             │
-│  Cybersecurity                                       │
-│  Network Engineering                                 │
-│  Linux                                               │
-│  Ethical Hacking                                     │
-│                                                      │
-│  $ status                                            │
-│  ● ONLINE  •  LEARNING  •  BUILDING                  │
-└─────────────────────────────────────────────────────┘
-\`\`\`
+${generateTerminalSection(config.profile.name.toLowerCase().replace(/\s/g, '.'), hostname, ['Cybersecurity', 'Network Engineering', 'Linux', 'Ethical Hacking'], ['ONLINE', 'LEARNING', 'BUILDING'], theme)}
 
 </div>`;
 }
@@ -238,101 +205,68 @@ ${project.github ? `\n<sub>[Repository](${project.github})</sub>` : ''}
   return md;
 }
 
-function renderCybersecurityLab(config: ProfileConfig, theme: ThemeConfig): string {
-  const cyberLabs = config.labs.filter((l) =>
-    l.technology.some((t) =>
-      ['linux', 'ssh', 'firewalld', 'selinux', 'auditd', 'security', 'web security'].includes(t.toLowerCase())
-    )
-  );
-
-  if (cyberLabs.length === 0 && config.ctf.length === 0) return '';
-
-  let md = `## Cybersecurity Lab\n\n`;
-
-  if (config.ctf.length > 0) {
-    md += `| Platform | Category | Challenge | Difficulty | Skills |\n`;
-    md += `|----------|----------|-----------|------------|--------|\n`;
-    for (const entry of config.ctf) {
-      md += `| ${entry.platform} | ${entry.category} | ${entry.challenge} | ${entry.difficulty} | ${entry.skillsLearned.join(', ')} |\n`;
-    }
-    md += '\n';
-  }
-
-  return md;
+function renderCtfCards(config: ProfileConfig, theme: ThemeConfig): string {
+  return generateCtfCards(config.ctf, theme);
 }
 
 function renderLinuxLabs(config: ProfileConfig, theme: ThemeConfig): string {
-  const linuxLabs = config.labs.filter((l) =>
-    l.technology.some((t) =>
-      ['linux', 'centos', 'rocky', 'bash', 'ssh', 'apache', 'firewalld', 'systemd', 'selinux', 'auditd'].includes(t.toLowerCase())
+  const linuxLabs: LabCard[] = config.labs
+    .filter((l) =>
+      l.technology.some((t) =>
+        ['linux', 'centos', 'rocky', 'bash', 'ssh', 'apache', 'firewalld', 'systemd', 'selinux', 'auditd'].includes(t.toLowerCase())
+      )
     )
-  );
+    .map((l) => ({
+      name: l.name,
+      technology: l.technology,
+      objective: l.objective,
+      status: l.status,
+    }));
 
-  if (linuxLabs.length === 0) return '';
-
-  let md = `## Linux Labs\n\n`;
-  md += `| Lab | Technology | Objective | Status |\n`;
-  md += `|-----|-----------|-----------|--------|\n`;
-  for (const lab of linuxLabs) {
-    md += `| ${lab.name} | ${lab.technology.join(', ')} | ${lab.objective} | ${statusBadge(lab.status)} |\n`;
-  }
-  return md;
+  return generateLabCards(linuxLabs, theme, 'Linux Labs');
 }
 
 function renderNetworkingLabs(config: ProfileConfig, theme: ThemeConfig): string {
-  const netLabs = config.labs.filter((l) =>
-    l.technology.some((t) =>
-      ['networking', 'cisco', 'vlan', 'routing', 'switching', 'dns', 'dhcp', 'haproxy', 'subnetting'].includes(t.toLowerCase())
+  const netLabs: LabCard[] = config.labs
+    .filter((l) =>
+      l.technology.some((t) =>
+        ['networking', 'cisco', 'vlan', 'routing', 'switching', 'dns', 'dhcp', 'haproxy', 'subnetting'].includes(t.toLowerCase())
+      )
     )
-  );
+    .map((l) => ({
+      name: l.name,
+      technology: l.technology,
+      objective: l.objective,
+      status: l.status,
+    }));
 
-  if (netLabs.length === 0) return '';
-
-  let md = `## Networking Labs\n\n`;
-  md += `| Lab | Technology | Objective | Status |\n`;
-  md += `|-----|-----------|-----------|--------|\n`;
-  for (const lab of netLabs) {
-    md += `| ${lab.name} | ${lab.technology.join(', ')} | ${lab.objective} | ${statusBadge(lab.status)} |\n`;
-  }
-  return md;
+  return generateLabCards(netLabs, theme, 'Networking Labs');
 }
 
 function renderCertifications(config: ProfileConfig, theme: ThemeConfig): string {
   if (config.certifications.length === 0) return '';
 
-  const items = config.certifications.map((c) => ({
+  const items: AdvancedTimelineItem[] = config.certifications.map((c) => ({
     year: c.year ?? '',
     title: c.name,
     subtitle: c.provider,
     status: c.status,
   }));
 
-  return `<div align="center">
-
-## Certifications & Courses
-
-${generateTimeline(items, theme)}
-
-</div>`;
+  return generateAdvancedTimeline(items, theme, 'Certifications & Courses');
 }
 
 function renderEducation(config: ProfileConfig, theme: ThemeConfig): string {
   if (config.education.length === 0) return '';
 
-  const items = config.education.map((e) => ({
+  const items: AdvancedTimelineItem[] = config.education.map((e) => ({
     year: e.year ?? '',
     title: e.degree,
     subtitle: e.institution,
     status: e.status,
   }));
 
-  return `<div align="center">
-
-## Education
-
-${generateTimeline(items, theme)}
-
-</div>`;
+  return generateAdvancedTimeline(items, theme, 'Education');
 }
 
 function renderCurrentlyLearning(config: ProfileConfig, theme: ThemeConfig): string {
@@ -349,8 +283,8 @@ function renderGitHubStats(config: ProfileConfig, githubData: GitHubData | undef
 
   let md = `## GitHub Statistics\n\n`;
   md += `<div align="center">\n\n`;
-  md += `<img src="https://github-readme-stats.vercel.app/api?username=${username}&show_icons=true&theme=dark&hide_border=true&bg_color=${encodeURIComponent(theme.background)}&title_color=${encodeURIComponent(theme.primary)}&text_color=${encodeURIComponent(theme.highlight)}" alt="GitHub Stats" height="165"/>\n\n`;
-  md += `<img src="https://github-readme-stats.vercel.app/api/top-langs/?username=${username}&layout=compact&theme=dark&hide_border=true&bg_color=${encodeURIComponent(theme.background)}&title_color=${encodeURIComponent(theme.primary)}&text_color=${encodeURIComponent(theme.highlight)}" alt="Top Languages" height="165"/>\n\n`;
+  md += `<img src="https://github-readme-stats.vercel.app/api?username=${username}&show_icons=true&theme=dark&hide_border=true&bg_color=${encodeURIComponent(theme.surface)}&title_color=${encodeURIComponent(theme.primary)}&text_color=${encodeURIComponent(theme.highlight)}&icon_color=${encodeURIComponent(theme.primary)}" alt="GitHub Stats" height="165"/>\n\n`;
+  md += `<img src="https://github-readme-stats.vercel.app/api/top-langs/?username=${username}&layout=compact&theme=dark&hide_border=true&bg_color=${encodeURIComponent(theme.surface)}&title_color=${encodeURIComponent(theme.primary)}&text_color=${encodeURIComponent(theme.highlight)}&lang_count=6" alt="Top Languages" height="165"/>\n\n`;
   md += `</div>\n`;
 
   if (githubData) {
@@ -381,11 +315,7 @@ function renderConnect(config: ProfileConfig, theme: ThemeConfig): string {
 function renderFooter(theme: ThemeConfig): string {
   return `<div align="center">
 
-<img src="assets/footer-animation.svg" alt="Footer animation" width="500"/>
-
-### <sub>SYSTEM STATUS: ONLINE</sub>
-
-**BUILD  •  LEARN  •  SECURE**
+${generateAnimatedFooter(theme)}
 
 </div>`;
 }
