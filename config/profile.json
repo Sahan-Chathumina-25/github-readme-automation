@@ -2,9 +2,9 @@
   "profile": {
     "name": "Sahan Chathumina",
     "username": "Sahan-Chathumina-25",
-    "headline": "Cybersecurity | Network Engineering | Linux | Ethical Hacking",
+    "headline": "Cybersecurity | Network Engineering | Linux | Full Stack Development | Ethical Hacking",
     "location": "Sri Lanka",
-    "about": "Building secure systems. Exploring networks. Learning cybersecurity through hands-on projects.\n\nI am an undergraduate studying Ethical Hacking & Network Security with a passion for understanding how systems work and how to secure them. I spend my time in Linux labs, building networks, solving CTF challenges, and writing scripts to automate security tasks.\n\n- Exploring network security and system hardening\n- Building hands-on Linux and networking labs\n- Solving CTF challenges to sharpen my skills\n- Writing Python and Bash automation scripts"
+    "about": "Building secure systems. Exploring networks. Developing practical digital solutions.\n\nI am an undergraduate studying Ethical Hacking & Network Security with a passion for understanding how systems work and how to secure them. I spend my time in Linux labs, building networks, solving CTF challenges, and writing scripts to automate security tasks."
   },
 
   "theme": {
@@ -25,7 +25,8 @@
     "cybersecurity": 45,
     "networking": 50,
     "linux": 55,
-    "programming": 35
+    "programming": 35,
+    "fullstack": 30
   },
 
   "education": [
@@ -53,7 +54,22 @@
     {
       "name": "CCNA: Introduction to Networks",
       "provider": "Cisco",
-      "status": "In Progress",
+      "module": "Module 01",
+      "status": "Completed",
+      "year": "2026"
+    },
+    {
+      "name": "CCNA: Switching, Routing & Wireless Essentials",
+      "provider": "Cisco",
+      "module": "Module 02",
+      "status": "Completed",
+      "year": "2026"
+    },
+    {
+      "name": "CCNA: Enterprise Networking, Security & Automation",
+      "provider": "Cisco",
+      "module": "Module 03",
+      "status": "Completed",
       "year": "2026"
     },
     {
@@ -102,13 +118,13 @@
       { "name": "Auditd", "level": "Learning" }
     ],
     "programming": [
-      { "name": "Python", "level": "Practicing" },
-      { "name": "Bash", "level": "Practicing" },
-      { "name": "JavaScript", "level": "Learning" },
+      { "name": "WordPress", "level": "Learning" },
       { "name": "HTML/CSS", "level": "Practicing" },
+      { "name": "JavaScript", "level": "Learning" },
       { "name": "PHP", "level": "Learning" },
       { "name": "MySQL", "level": "Learning" },
-      { "name": "Full Stack Development", "level": "Learning" }
+      { "name": "Python", "level": "Practicing" },
+      { "name": "Bash", "level": "Practicing" }
     ],
     "tools": [
       { "name": "Git", "level": "Practicing" },

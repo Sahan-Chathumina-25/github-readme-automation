@@ -1,13 +1,7 @@
 import type { ProfileConfig, GitHubData, SkillItem } from '../types.js';
 import type { ThemeConfig, SkillPercentages, FeaturedScoreWeights } from '../theme.js';
 import { DEFAULT_THEME, DEFAULT_FEATURED_WEIGHTS } from '../theme.js';
-import {
-  generateHeroBanner,
-  generateSkillCircleRow,
-  generateLanguageBars,
-  generateNetworkTopology,
-  generateSectionDivider,
-} from '../svg/index.js';
+import { generateSectionDivider } from '../svg/index.js';
 
 interface GeneratorOptions {
   theme?: ThemeConfig;
@@ -43,21 +37,19 @@ export function generateREADME(
   options: GeneratorOptions = {}
 ): string {
   const theme = options.theme ?? DEFAULT_THEME;
-  const skillPcts = options.skillPercentages ?? { cybersecurity: 45, networking: 50, linux: 55, programming: 35 };
-  const weights = options.featuredWeights ?? DEFAULT_FEATURED_WEIGHTS;
 
   const sections: string[] = [];
 
-  sections.push(renderHero(config, theme));
+  sections.push(renderHero(config));
+  sections.push(renderAbout());
   sections.push(renderTerminal(config));
-  sections.push(renderAbout(config));
-  sections.push(renderSkillCircles(theme));
+  sections.push(renderSkillCircles());
   sections.push(renderSkills(config));
   sections.push(divider(theme));
-  sections.push(renderNetworkTopology(theme));
-  sections.push(renderFeaturedProjects(config, githubData, theme, weights));
+  sections.push(renderNetworkArchitecture());
+  sections.push(renderFeaturedProjects(config, githubData, theme));
   sections.push(divider(theme));
-  sections.push(renderCtfTable(config));
+  sections.push(renderCyberLabs(config));
   sections.push(renderLinuxLabs(config));
   sections.push(renderNetworkingLabs(config));
   sections.push(divider(theme));
@@ -72,7 +64,7 @@ export function generateREADME(
   return sections.filter(Boolean).join('\n\n');
 }
 
-function renderHero(config: ProfileConfig, theme: ThemeConfig): string {
+function renderHero(config: ProfileConfig): string {
   return `<div align="center">
 
 <img src="assets/profile-banner.svg" alt="${config.profile.name} — Cybersecurity Portfolio Banner" width="100%"/>
@@ -80,48 +72,32 @@ function renderHero(config: ProfileConfig, theme: ThemeConfig): string {
 </div>`;
 }
 
-function renderTerminal(config: ProfileConfig): string {
-  const user = config.profile.name.toLowerCase().replace(/\s/g, '.');
-  return `<div align="center">
-
-\`\`\`
- ┌──────────────────────────────────────────────────────────────┐
- │                                                              │
- │   $ whoami                                                   │
- │   ${user}@cyberlab${' '.repeat(Math.max(0, 42 - user.length - 9))}│
- │                                                              │
- │   $ focus                                                    │
- │   > Cybersecurity                                            │
- │   > Network Engineering                                      │
- │   > Linux                                                    │
- │   > Ethical Hacking                                          │
- │                                                              │
- │   $ status                                                   │
- │   ● ONLINE  •  LEARNING  •  BUILDING                         │
- │                                                              │
- └──────────────────────────────────────────────────────────────┘
-\`\`\`
-
-</div>`;
-}
-
-function renderAbout(config: ProfileConfig): string {
-  const about = config.profile.about ?? 'Building secure systems. Exploring networks. Learning cybersecurity through hands-on projects.';
+function renderAbout(): string {
   return `<div align="center">
 
 ## About Me
 
-${about}
+<img src="assets/about-card.svg" alt="About Me — Identity panel with profile summary, focus areas, and statistics" width="800"/>
 
 </div>`;
 }
 
-function renderSkillCircles(theme: ThemeConfig): string {
+function renderTerminal(config: ProfileConfig): string {
+  return `<div align="center">
+
+## Who Am I
+
+<img src="assets/terminal.svg" alt="Terminal interface showing identity, stack, focus, and status" width="700"/>
+
+</div>`;
+}
+
+function renderSkillCircles(): string {
   return `<div align="center">
 
 ## Skill Overview
 
-<img src="assets/skill-circles.svg" alt="Skill proficiency percentages" width="620"/>
+<img src="assets/skill-circles.svg" alt="Skill proficiency percentages — Cybersecurity, Networking, Linux, Full Stack Development" width="680"/>
 
 </div>`;
 }
@@ -146,7 +122,7 @@ function renderSkills(config: ProfileConfig): string {
     md += '\n\n';
   }
   if (skills.programming.length > 0) {
-    md += `### Development\n\n`;
+    md += `### Full Stack Development\n\n`;
     md += skills.programming.map((s) => shieldBadge(s.name, s.level, s.level === 'Practicing' ? 'cyan' : 'blue')).join(' ');
     md += '\n\n';
   }
@@ -159,12 +135,12 @@ function renderSkills(config: ProfileConfig): string {
   return md;
 }
 
-function renderNetworkTopology(theme: ThemeConfig): string {
+function renderNetworkArchitecture(): string {
   return `<div align="center">
 
 ## Network Architecture
 
-<img src="assets/network-topology.svg" alt="Network topology diagram" width="600"/>
+<img src="assets/network-architecture.svg" alt="Advanced network architecture — Internet, Firewall, Load Balancer, Web Tier, Application Layer, Database, Backup" width="800"/>
 
 </div>`;
 }
@@ -172,8 +148,7 @@ function renderNetworkTopology(theme: ThemeConfig): string {
 function renderFeaturedProjects(
   config: ProfileConfig,
   githubData: GitHubData | undefined,
-  theme: ThemeConfig,
-  weights: FeaturedScoreWeights
+  theme: ThemeConfig
 ): string {
   const featuredFromConfig = config.projects.filter((p) => p.featured);
   const featured = featuredFromConfig.length > 0 ? featuredFromConfig : config.projects.slice(0, 6);
@@ -204,16 +179,16 @@ ${project.github ? `\n<sub>[Repository](${project.github})</sub>` : ''}
   return md;
 }
 
-function renderCtfTable(config: ProfileConfig): string {
+function renderCyberLabs(config: ProfileConfig): string {
   if (config.ctf.length === 0) return '';
 
-  let md = `## Cybersecurity Lab\n\n`;
-  md += `| Platform | Category | Challenge | Difficulty | Skills |\n`;
-  md += `|----------|----------|-----------|------------|--------|\n`;
-  for (const entry of config.ctf) {
-    md += `| ${entry.platform} | ${entry.category} | ${entry.challenge} | ${entry.difficulty} | ${entry.skillsLearned.join(', ')} |\n`;
-  }
-  return md;
+  return `<div align="center">
+
+## Cybersecurity Lab
+
+<img src="assets/cyber-labs.svg" alt="Cybersecurity CTF lab cards with difficulty bars and skill indicators" width="700"/>
+
+</div>`;
 }
 
 function renderLinuxLabs(config: ProfileConfig): string {
@@ -225,13 +200,13 @@ function renderLinuxLabs(config: ProfileConfig): string {
 
   if (linuxLabs.length === 0) return '';
 
-  let md = `## Linux Labs\n\n`;
-  md += `| Lab | Technology | Objective | Status |\n`;
-  md += `|-----|-----------|-----------|--------|\n`;
-  for (const lab of linuxLabs) {
-    md += `| ${lab.name} | ${lab.technology.join(', ')} | ${lab.objective} | ${statusBadge(lab.status)} |\n`;
-  }
-  return md;
+  return `<div align="center">
+
+## Linux Labs
+
+<img src="assets/linux-labs.svg" alt="Linux lab dashboard with status indicators and technology labels" width="700"/>
+
+</div>`;
 }
 
 function renderNetworkingLabs(config: ProfileConfig): string {
@@ -243,25 +218,25 @@ function renderNetworkingLabs(config: ProfileConfig): string {
 
   if (netLabs.length === 0) return '';
 
-  let md = `## Networking Labs\n\n`;
-  md += `| Lab | Technology | Objective | Status |\n`;
-  md += `|-----|-----------|-----------|--------|\n`;
-  for (const lab of netLabs) {
-    md += `| ${lab.name} | ${lab.technology.join(', ')} | ${lab.objective} | ${statusBadge(lab.status)} |\n`;
-  }
-  return md;
+  return `<div align="center">
+
+## Networking Labs
+
+<img src="assets/network-labs.svg" alt="Network operations dashboard with lab nodes, status indicators, and progress bars" width="700"/>
+
+</div>`;
 }
 
 function renderCertifications(config: ProfileConfig): string {
   if (config.certifications.length === 0) return '';
 
-  let md = `## Certifications & Courses\n\n`;
-  for (const cert of config.certifications) {
-    md += `- **${cert.name}** — ${cert.provider} ${statusBadge(cert.status)}`;
-    if (cert.year) md += ` (${cert.year})`;
-    md += '\n';
-  }
-  return md;
+  return `<div align="center">
+
+## Certifications & Courses
+
+<img src="assets/certifications.svg" alt="Certification timeline — Red Hat, CCNA 3 modules, Diploma in English" width="700"/>
+
+</div>`;
 }
 
 function renderEducation(config: ProfileConfig): string {
@@ -322,11 +297,9 @@ function renderConnect(config: ProfileConfig): string {
 function renderFooter(): string {
   return `<div align="center">
 
----
+## Footer
 
-### <sub>SYSTEM STATUS: ONLINE</sub>
-
-**BUILD  •  LEARN  •  SECURE**
+<img src="assets/footer-cinematic.svg" alt="Cinematic footer — BUILD • LEARN • SECURE — System Status: ONLINE" width="600"/>
 
 </div>`;
 }

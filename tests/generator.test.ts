@@ -10,7 +10,7 @@ const CONFIG_PATH = join(PROJECT_ROOT, 'config', 'profile.json');
 describe('README Generator', () => {
   const config = loadConfig(CONFIG_PATH);
   const theme = DEFAULT_THEME;
-  const skillPcts = { cybersecurity: 45, networking: 50, linux: 55, programming: 35 };
+  const skillPcts = { cybersecurity: 45, networking: 50, linux: 55, programming: 35, fullstack: 30 };
 
   it('generates a non-empty README', () => {
     const readme = generateREADME(config, undefined, { theme, skillPercentages: skillPcts });
@@ -22,11 +22,14 @@ describe('README Generator', () => {
     expect(readme).toContain('Sahan Chathumina');
   });
 
-  it('contains terminal section', () => {
+  it('contains about SVG reference', () => {
     const readme = generateREADME(config, undefined, { theme, skillPercentages: skillPcts });
-    expect(readme).toContain('whoami');
-    expect(readme).toContain('ONLINE');
-    expect(readme).toContain('cyberlab');
+    expect(readme).toContain('assets/about-card.svg');
+  });
+
+  it('contains terminal SVG reference', () => {
+    const readme = generateREADME(config, undefined, { theme, skillPercentages: skillPcts });
+    expect(readme).toContain('assets/terminal.svg');
   });
 
   it('contains banner SVG reference', () => {
@@ -39,16 +42,42 @@ describe('README Generator', () => {
     expect(readme).toContain('assets/skill-circles.svg');
   });
 
-  it('contains network topology SVG reference', () => {
+  it('contains network architecture SVG reference', () => {
     const readme = generateREADME(config, undefined, { theme, skillPercentages: skillPcts });
-    expect(readme).toContain('assets/network-topology.svg');
+    expect(readme).toContain('assets/network-architecture.svg');
   });
 
-  it('contains skills section', () => {
+  it('contains cyber labs SVG reference', () => {
+    const readme = generateREADME(config, undefined, { theme, skillPercentages: skillPcts });
+    expect(readme).toContain('assets/cyber-labs.svg');
+  });
+
+  it('contains linux labs SVG reference', () => {
+    const readme = generateREADME(config, undefined, { theme, skillPercentages: skillPcts });
+    expect(readme).toContain('assets/linux-labs.svg');
+  });
+
+  it('contains network labs SVG reference', () => {
+    const readme = generateREADME(config, undefined, { theme, skillPercentages: skillPcts });
+    expect(readme).toContain('assets/network-labs.svg');
+  });
+
+  it('contains certifications SVG reference', () => {
+    const readme = generateREADME(config, undefined, { theme, skillPercentages: skillPcts });
+    expect(readme).toContain('assets/certifications.svg');
+  });
+
+  it('contains footer SVG reference', () => {
+    const readme = generateREADME(config, undefined, { theme, skillPercentages: skillPcts });
+    expect(readme).toContain('assets/footer-cinematic.svg');
+  });
+
+  it('contains skills section with Full Stack Development', () => {
     const readme = generateREADME(config, undefined, { theme, skillPercentages: skillPcts });
     expect(readme).toContain('## Skills');
     expect(readme).toContain('Cybersecurity');
     expect(readme).toContain('Full Stack Development');
+    expect(readme).toContain('WordPress');
   });
 
   it('contains featured projects', () => {
@@ -57,27 +86,9 @@ describe('README Generator', () => {
     expect(readme).toContain('Network Security Lab');
   });
 
-  it('contains CTF table', () => {
-    const readme = generateREADME(config, undefined, { theme, skillPercentages: skillPcts });
-    expect(readme).toContain('## Cybersecurity Lab');
-    expect(readme).toContain('PicoCTF');
-  });
-
-  it('contains Linux labs table', () => {
-    const readme = generateREADME(config, undefined, { theme, skillPercentages: skillPcts });
-    expect(readme).toContain('## Linux Labs');
-  });
-
-  it('contains Networking labs table', () => {
-    const readme = generateREADME(config, undefined, { theme, skillPercentages: skillPcts });
-    expect(readme).toContain('## Networking Labs');
-  });
-
   it('contains certifications', () => {
     const readme = generateREADME(config, undefined, { theme, skillPercentages: skillPcts });
     expect(readme).toContain('## Certifications');
-    expect(readme).toContain('Red Hat');
-    expect(readme).toContain('Diploma in English');
   });
 
   it('contains education', () => {
@@ -101,14 +112,6 @@ describe('README Generator', () => {
   it('contains connect section', () => {
     const readme = generateREADME(config, undefined, { theme, skillPercentages: skillPcts });
     expect(readme).toContain('## Connect With Me');
-  });
-
-  it('contains footer', () => {
-    const readme = generateREADME(config, undefined, { theme, skillPercentages: skillPcts });
-    expect(readme).toContain('ONLINE');
-    expect(readme).toContain('BUILD');
-    expect(readme).toContain('LEARN');
-    expect(readme).toContain('SECURE');
   });
 
   it('does not contain standalone Projects section', () => {

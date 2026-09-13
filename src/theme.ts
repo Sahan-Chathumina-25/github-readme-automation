@@ -31,6 +31,7 @@ export interface SkillPercentages {
   networking: number;
   linux: number;
   programming: number;
+  fullstack: number;
 }
 
 export interface FeaturedScoreWeights {

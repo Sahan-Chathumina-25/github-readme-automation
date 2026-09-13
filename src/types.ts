@@ -32,6 +32,7 @@ export interface Certification {
   status: 'Completed' | 'In Progress' | 'Planned';
   year?: string;
   credential?: string;
+  module?: string;
 }
 
 export interface Skills {
