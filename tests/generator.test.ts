@@ -7,7 +7,7 @@ import { join } from 'path';
 const PROJECT_ROOT = process.cwd();
 const CONFIG_PATH = join(PROJECT_ROOT, 'config', 'profile.json');
 
-describe('Cinematic README Generator', () => {
+describe('README Generator', () => {
   const config = loadConfig(CONFIG_PATH);
   const theme = DEFAULT_THEME;
   const skillPcts = { cybersecurity: 45, networking: 50, linux: 55, programming: 35 };
@@ -51,38 +51,39 @@ describe('Cinematic README Generator', () => {
     expect(readme).toContain('Full Stack Development');
   });
 
-  it('contains featured projects section', () => {
+  it('contains featured projects', () => {
     const readme = generateREADME(config, undefined, { theme, skillPercentages: skillPcts });
     expect(readme).toContain('## Featured Projects');
     expect(readme).toContain('Network Security Lab');
   });
 
-  it('contains CTF cards', () => {
+  it('contains CTF table', () => {
     const readme = generateREADME(config, undefined, { theme, skillPercentages: skillPcts });
     expect(readme).toContain('## Cybersecurity Lab');
-    expect(readme).toContain('CTF 01');
+    expect(readme).toContain('PicoCTF');
   });
 
-  it('contains lab cards', () => {
+  it('contains Linux labs table', () => {
     const readme = generateREADME(config, undefined, { theme, skillPercentages: skillPcts });
     expect(readme).toContain('## Linux Labs');
-    expect(readme).toContain('## Networking Labs');
-    expect(readme).toContain('LAB 01');
   });
 
-  it('contains certifications with advanced timeline', () => {
+  it('contains Networking labs table', () => {
+    const readme = generateREADME(config, undefined, { theme, skillPercentages: skillPcts });
+    expect(readme).toContain('## Networking Labs');
+  });
+
+  it('contains certifications', () => {
     const readme = generateREADME(config, undefined, { theme, skillPercentages: skillPcts });
     expect(readme).toContain('## Certifications');
     expect(readme).toContain('Red Hat');
     expect(readme).toContain('Diploma in English');
-    expect(readme).toContain('COMPLETED');
   });
 
-  it('contains education with advanced timeline', () => {
+  it('contains education', () => {
     const readme = generateREADME(config, undefined, { theme, skillPercentages: skillPcts });
     expect(readme).toContain('## Education');
     expect(readme).toContain('BSc');
-    expect(readme).toContain('IN PROGRESS');
   });
 
   it('contains currently learning', () => {
@@ -91,7 +92,7 @@ describe('Cinematic README Generator', () => {
     expect(readme).toContain('ACTIVE');
   });
 
-  it('contains GitHub stats with theme colors', () => {
+  it('contains GitHub stats', () => {
     const readme = generateREADME(config, undefined, { theme, skillPercentages: skillPcts });
     expect(readme).toContain('## GitHub Statistics');
     expect(readme).toContain('github-readme-stats.vercel.app');
@@ -102,7 +103,7 @@ describe('Cinematic README Generator', () => {
     expect(readme).toContain('## Connect With Me');
   });
 
-  it('contains animated footer', () => {
+  it('contains footer', () => {
     const readme = generateREADME(config, undefined, { theme, skillPercentages: skillPcts });
     expect(readme).toContain('ONLINE');
     expect(readme).toContain('BUILD');
@@ -110,16 +111,8 @@ describe('Cinematic README Generator', () => {
     expect(readme).toContain('SECURE');
   });
 
-  it('contains section dividers', () => {
+  it('does not contain standalone Projects section', () => {
     const readme = generateREADME(config, undefined, { theme, skillPercentages: skillPcts });
-    expect(readme).toContain('sd-g');
-  });
-
-  it('does not contain old Projects section', () => {
-    const readme = generateREADME(config, undefined, { theme, skillPercentages: skillPcts });
-    const projectIdx = readme.indexOf('## Projects\n');
-    const featuredIdx = readme.indexOf('## Featured Projects');
-    expect(projectIdx).toBe(-1);
-    expect(featuredIdx).toBeGreaterThan(-1);
+    expect(readme).not.toMatch(/## Projects\n/);
   });
 });

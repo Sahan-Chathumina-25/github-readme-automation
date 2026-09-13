@@ -7,14 +7,7 @@ import {
   generateLanguageBars,
   generateNetworkTopology,
   generateSectionDivider,
-  generateAboutSection,
-  generateTerminalSection,
-  generateLabCards,
-  generateCtfCards,
-  generateAdvancedTimeline,
-  generateAnimatedFooter,
 } from '../svg/index.js';
-import type { AboutSection, LabCard, AdvancedTimelineItem } from '../svg/index.js';
 
 interface GeneratorOptions {
   theme?: ThemeConfig;
@@ -56,25 +49,25 @@ export function generateREADME(
   const sections: string[] = [];
 
   sections.push(renderHero(config, theme));
-  sections.push(renderTerminal(config, theme));
-  sections.push(renderAbout(config, theme));
+  sections.push(renderTerminal(config));
+  sections.push(renderAbout(config));
   sections.push(renderSkillCircles(theme));
-  sections.push(renderSkills(config, theme));
+  sections.push(renderSkills(config));
   sections.push(divider(theme));
   sections.push(renderNetworkTopology(theme));
   sections.push(renderFeaturedProjects(config, githubData, theme, weights));
   sections.push(divider(theme));
-  sections.push(renderCtfCards(config, theme));
-  sections.push(renderLinuxLabs(config, theme));
-  sections.push(renderNetworkingLabs(config, theme));
+  sections.push(renderCtfTable(config));
+  sections.push(renderLinuxLabs(config));
+  sections.push(renderNetworkingLabs(config));
   sections.push(divider(theme));
-  sections.push(renderCertifications(config, theme));
-  sections.push(renderEducation(config, theme));
-  sections.push(renderCurrentlyLearning(config, theme));
+  sections.push(renderCertifications(config));
+  sections.push(renderEducation(config));
+  sections.push(renderCurrentlyLearning(config));
   sections.push(divider(theme));
   sections.push(renderGitHubStats(config, githubData, theme));
-  sections.push(renderConnect(config, theme));
-  sections.push(renderFooter(theme));
+  sections.push(renderConnect(config));
+  sections.push(renderFooter());
 
   return sections.filter(Boolean).join('\n\n');
 }
@@ -87,32 +80,38 @@ function renderHero(config: ProfileConfig, theme: ThemeConfig): string {
 </div>`;
 }
 
-function renderTerminal(config: ProfileConfig, theme: ThemeConfig): string {
-  const hostname = 'cyberlab';
+function renderTerminal(config: ProfileConfig): string {
+  const user = config.profile.name.toLowerCase().replace(/\s/g, '.');
   return `<div align="center">
 
-${generateTerminalSection(config.profile.name.toLowerCase().replace(/\s/g, '.'), hostname, ['Cybersecurity', 'Network Engineering', 'Linux', 'Ethical Hacking'], ['ONLINE', 'LEARNING', 'BUILDING'], theme)}
+\`\`\`
+ ┌──────────────────────────────────────────────────────────────┐
+ │                                                              │
+ │   $ whoami                                                   │
+ │   ${user}@cyberlab${' '.repeat(Math.max(0, 42 - user.length - 9))}│
+ │                                                              │
+ │   $ focus                                                    │
+ │   > Cybersecurity                                            │
+ │   > Network Engineering                                      │
+ │   > Linux                                                    │
+ │   > Ethical Hacking                                          │
+ │                                                              │
+ │   $ status                                                   │
+ │   ● ONLINE  •  LEARNING  •  BUILDING                         │
+ │                                                              │
+ └──────────────────────────────────────────────────────────────┘
+\`\`\`
 
 </div>`;
 }
 
-function renderAbout(config: ProfileConfig, theme: ThemeConfig): string {
-  const data: AboutSection = {
-    name: config.profile.name,
-    tagline: config.profile.headline,
-    focus: ['Cybersecurity', 'Network Engineering', 'Linux', 'Ethical Hacking'],
-    stats: [
-      { label: 'Focus', value: 'Security & Networks' },
-      { label: 'Status', value: 'Learning & Building' },
-      { label: 'Stack', value: 'Linux • Python • Bash' },
-    ],
-  };
-
+function renderAbout(config: ProfileConfig): string {
+  const about = config.profile.about ?? 'Building secure systems. Exploring networks. Learning cybersecurity through hands-on projects.';
   return `<div align="center">
 
 ## About Me
 
-${generateAboutSection(data, theme)}
+${about}
 
 </div>`;
 }
@@ -127,7 +126,7 @@ function renderSkillCircles(theme: ThemeConfig): string {
 </div>`;
 }
 
-function renderSkills(config: ProfileConfig, theme: ThemeConfig): string {
+function renderSkills(config: ProfileConfig): string {
   const { skills } = config;
   let md = `## Skills & Technologies\n\n`;
 
@@ -205,71 +204,79 @@ ${project.github ? `\n<sub>[Repository](${project.github})</sub>` : ''}
   return md;
 }
 
-function renderCtfCards(config: ProfileConfig, theme: ThemeConfig): string {
-  return generateCtfCards(config.ctf, theme);
+function renderCtfTable(config: ProfileConfig): string {
+  if (config.ctf.length === 0) return '';
+
+  let md = `## Cybersecurity Lab\n\n`;
+  md += `| Platform | Category | Challenge | Difficulty | Skills |\n`;
+  md += `|----------|----------|-----------|------------|--------|\n`;
+  for (const entry of config.ctf) {
+    md += `| ${entry.platform} | ${entry.category} | ${entry.challenge} | ${entry.difficulty} | ${entry.skillsLearned.join(', ')} |\n`;
+  }
+  return md;
 }
 
-function renderLinuxLabs(config: ProfileConfig, theme: ThemeConfig): string {
-  const linuxLabs: LabCard[] = config.labs
-    .filter((l) =>
-      l.technology.some((t) =>
-        ['linux', 'centos', 'rocky', 'bash', 'ssh', 'apache', 'firewalld', 'systemd', 'selinux', 'auditd'].includes(t.toLowerCase())
-      )
+function renderLinuxLabs(config: ProfileConfig): string {
+  const linuxLabs = config.labs.filter((l) =>
+    l.technology.some((t) =>
+      ['linux', 'centos', 'rocky', 'bash', 'ssh', 'apache', 'firewalld', 'systemd', 'selinux', 'auditd'].includes(t.toLowerCase())
     )
-    .map((l) => ({
-      name: l.name,
-      technology: l.technology,
-      objective: l.objective,
-      status: l.status,
-    }));
+  );
 
-  return generateLabCards(linuxLabs, theme, 'Linux Labs');
+  if (linuxLabs.length === 0) return '';
+
+  let md = `## Linux Labs\n\n`;
+  md += `| Lab | Technology | Objective | Status |\n`;
+  md += `|-----|-----------|-----------|--------|\n`;
+  for (const lab of linuxLabs) {
+    md += `| ${lab.name} | ${lab.technology.join(', ')} | ${lab.objective} | ${statusBadge(lab.status)} |\n`;
+  }
+  return md;
 }
 
-function renderNetworkingLabs(config: ProfileConfig, theme: ThemeConfig): string {
-  const netLabs: LabCard[] = config.labs
-    .filter((l) =>
-      l.technology.some((t) =>
-        ['networking', 'cisco', 'vlan', 'routing', 'switching', 'dns', 'dhcp', 'haproxy', 'subnetting'].includes(t.toLowerCase())
-      )
+function renderNetworkingLabs(config: ProfileConfig): string {
+  const netLabs = config.labs.filter((l) =>
+    l.technology.some((t) =>
+      ['networking', 'cisco', 'vlan', 'routing', 'switching', 'dns', 'dhcp', 'haproxy', 'subnetting'].includes(t.toLowerCase())
     )
-    .map((l) => ({
-      name: l.name,
-      technology: l.technology,
-      objective: l.objective,
-      status: l.status,
-    }));
+  );
 
-  return generateLabCards(netLabs, theme, 'Networking Labs');
+  if (netLabs.length === 0) return '';
+
+  let md = `## Networking Labs\n\n`;
+  md += `| Lab | Technology | Objective | Status |\n`;
+  md += `|-----|-----------|-----------|--------|\n`;
+  for (const lab of netLabs) {
+    md += `| ${lab.name} | ${lab.technology.join(', ')} | ${lab.objective} | ${statusBadge(lab.status)} |\n`;
+  }
+  return md;
 }
 
-function renderCertifications(config: ProfileConfig, theme: ThemeConfig): string {
+function renderCertifications(config: ProfileConfig): string {
   if (config.certifications.length === 0) return '';
 
-  const items: AdvancedTimelineItem[] = config.certifications.map((c) => ({
-    year: c.year ?? '',
-    title: c.name,
-    subtitle: c.provider,
-    status: c.status,
-  }));
-
-  return generateAdvancedTimeline(items, theme, 'Certifications & Courses');
+  let md = `## Certifications & Courses\n\n`;
+  for (const cert of config.certifications) {
+    md += `- **${cert.name}** — ${cert.provider} ${statusBadge(cert.status)}`;
+    if (cert.year) md += ` (${cert.year})`;
+    md += '\n';
+  }
+  return md;
 }
 
-function renderEducation(config: ProfileConfig, theme: ThemeConfig): string {
+function renderEducation(config: ProfileConfig): string {
   if (config.education.length === 0) return '';
 
-  const items: AdvancedTimelineItem[] = config.education.map((e) => ({
-    year: e.year ?? '',
-    title: e.degree,
-    subtitle: e.institution,
-    status: e.status,
-  }));
-
-  return generateAdvancedTimeline(items, theme, 'Education');
+  let md = `## Education\n\n`;
+  for (const edu of config.education) {
+    md += `- **${edu.degree}** — ${edu.institution} ${statusBadge(edu.status)}`;
+    if (edu.year) md += ` (${edu.year})`;
+    md += '\n';
+  }
+  return md;
 }
 
-function renderCurrentlyLearning(config: ProfileConfig, theme: ThemeConfig): string {
+function renderCurrentlyLearning(config: ProfileConfig): string {
   if (config.currentlyLearning.length === 0) return '';
 
   let md = `## Currently Learning\n\n`;
@@ -296,7 +303,7 @@ function renderGitHubStats(config: ProfileConfig, githubData: GitHubData | undef
   return md;
 }
 
-function renderConnect(config: ProfileConfig, theme: ThemeConfig): string {
+function renderConnect(config: ProfileConfig): string {
   const { social } = config;
   let md = `<div align="center">\n\n## Connect With Me\n\n`;
 
@@ -312,10 +319,14 @@ function renderConnect(config: ProfileConfig, theme: ThemeConfig): string {
   return md;
 }
 
-function renderFooter(theme: ThemeConfig): string {
+function renderFooter(): string {
   return `<div align="center">
 
-${generateAnimatedFooter(theme)}
+---
+
+### <sub>SYSTEM STATUS: ONLINE</sub>
+
+**BUILD  •  LEARN  •  SECURE**
 
 </div>`;
 }
