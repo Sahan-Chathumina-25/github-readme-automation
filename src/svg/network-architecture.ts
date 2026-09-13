@@ -1,125 +1,140 @@
-import type { ThemeConfig } from '../theme.js';
-
-function esc(str: string): string {
-  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
+import type { ThemeConfig } from '../theme';
 
 export function generateNetworkArchitecture(theme: ThemeConfig): string {
-  const w = 800;
-  const h = 520;
+  const W = 800;
+  const H = 620;
 
-  const cx = w / 2;
-  const layerH = 80;
+  // Layer definitions — clean, horizontal layout
+  const layers = [
+    { label: 'INTERNET', sub: 'External Users', y: 30, color: theme.muted },
+    { label: 'SECURITY', sub: 'Edge Firewall & VPN', y: 130, color: theme.warning },
+    { label: 'LOAD BALANCING', sub: 'HAProxy', y: 230, color: theme.primary },
+    { label: 'WEB TIER', sub: 'Apache / Nginx (x2)', y: 330, color: theme.secondary },
+    { label: 'APPLICATION', sub: 'Services Layer', y: 430, color: theme.secondary },
+    { label: 'DATABASE', sub: 'MySQL Primary / Replica', y: 530, color: theme.success },
+  ];
 
-  interface NodeDef {
-    x: number;
-    y: number;
-    r: number;
-    label: string;
-    color: string;
-    sublabel?: string;
+  // Supporting services — right side column
+  const services = [
+    { icon: '◈', name: 'DNS' },
+    { icon: '◈', name: 'DHCP' },
+    { icon: '◈', name: 'SSH' },
+    { icon: '◈', name: 'TLS/SSL' },
+    { icon: '◈', name: 'Monitoring' },
+    { icon: '◈', name: 'Logging' },
+    { icon: '◈', name: 'Backup' },
+  ];
+
+  let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}">`;
+  svg += `<defs>`;
+  svg += `<style>
+    @keyframes pulse { 0%,100%{opacity:0.6} 50%{opacity:1} }
+    @keyframes flow { 0%{stroke-dashoffset:12} 100%{stroke-dashoffset:0} }
+    .layer-label { font-family:'Segoe UI',system-ui,sans-serif; font-size:10px; font-weight:600; letter-spacing:1.5px; }
+    .layer-sub { font-family:'Segoe UI',system-ui,sans-serif; font-size:9px; }
+    .node-text { font-family:'Segoe UI',system-ui,sans-serif; font-size:12px; font-weight:500; fill:${theme.highlight}; }
+    .service-text { font-family:'Segoe UI',system-ui,sans-serif; font-size:9px; fill:${theme.muted}; }
+  </style>`;
+
+  // Connection line gradient
+  svg += `<linearGradient id="conn-g" x1="0%" y1="0%" x2="0%" y2="100%">
+    <stop offset="0%" stop-color="${theme.primary}" stop-opacity="0.3"/>
+    <stop offset="50%" stop-color="${theme.primary}" stop-opacity="0.6"/>
+    <stop offset="100%" stop-color="${theme.primary}" stop-opacity="0.3"/>
+  </linearGradient>`;
+
+  // Node glow filter
+  svg += `<filter id="node-glow" x="-20%" y="-20%" width="140%" height="140%">
+    <feGaussianBlur stdDeviation="3" result="blur"/>
+    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>`;
+  svg += `</defs>`;
+
+  // Background
+  svg += `<rect width="${W}" height="${H}" fill="${theme.background}" rx="8"/>`;
+
+  // Connection lines between layers (center vertical line)
+  for (let i = 0; i < layers.length - 1; i++) {
+    const y1 = layers[i].y + 30;
+    const y2 = layers[i + 1].y;
+    svg += `<line x1="400" y1="${y1}" x2="400" y2="${y2}" stroke="url(#conn-g)" stroke-width="1.5"/>`;
+    // Small animated packet
+    svg += `<circle r="2.5" fill="${theme.primary}" opacity="0.8">
+      <animateMotion dur="${3 + i * 0.5}s" repeatCount="indefinite" path="M400,${y1} L400,${y2}"/>
+    </circle>`;
   }
 
-  const nodes: NodeDef[] = [
-    { x: cx, y: 40, r: 22, label: 'INTERNET', color: theme.primary },
-    { x: cx, y: 40 + layerH, r: 20, label: 'FIREWALL', color: theme.warning, sublabel: 'EDGE SECURITY' },
-    { x: cx, y: 40 + layerH * 2, r: 20, label: 'LOAD BALANCER', color: theme.secondary, sublabel: 'HAPROXY' },
-    { x: cx - 120, y: 40 + layerH * 3, r: 18, label: 'WEB SRV 01', color: theme.secondary, sublabel: 'APACHE' },
-    { x: cx + 120, y: 40 + layerH * 3, r: 18, label: 'WEB SRV 02', color: theme.secondary, sublabel: 'APACHE' },
-    { x: cx, y: 40 + layerH * 4, r: 20, label: 'APP LAYER', color: theme.primary, sublabel: 'APPLICATION' },
-    { x: cx, y: 40 + layerH * 5, r: 20, label: 'DATABASE', color: theme.success, sublabel: 'MySQL' },
-    { x: cx, y: 40 + layerH * 6, r: 16, label: 'BACKUP', color: theme.muted, sublabel: 'MONITORING' },
-  ];
+  // Layer boxes
+  layers.forEach((layer, i) => {
+    const boxW = 260;
+    const boxH = 48;
+    const boxX = 400 - boxW / 2;
+    const boxY = layer.y;
 
-  const connections: [number, number][] = [
-    [0, 1], [1, 2], [2, 3], [2, 4], [3, 5], [4, 5], [5, 6], [6, 7],
-  ];
+    // Box background
+    svg += `<rect x="${boxX}" y="${boxY}" width="${boxW}" height="${boxH}" rx="6" fill="${theme.surface}" stroke="${layer.color}" stroke-width="1" opacity="0.9"/>`;
 
-  const connLines = connections.map(([from, to]) => {
-    const a = nodes[from];
-    const b = nodes[to];
-    return `<line x1="${a.x}" y1="${a.y + a.r}" x2="${b.x}" y2="${b.y - b.r}" stroke="${theme.primary}" stroke-width="1" opacity="0.2"/>`;
-  }).join('\n    ');
+    // Left accent line
+    svg += `<rect x="${boxX}" y="${boxY + 8}" width="3" height="${boxH - 16}" rx="1.5" fill="${layer.color}" opacity="0.7"/>`;
 
-  const packets = connections.map(([from, to], i) => {
-    const a = nodes[from];
-    const b = nodes[to];
-    const dur = 2.5 + i * 0.3;
-    return `<circle r="2.5" fill="${theme.primary}" opacity="0.8" filter="url(#na-glow)">
-      <animateMotion dur="${dur}s" repeatCount="indefinite" path="M${a.x},${a.y + a.r} L${b.x},${b.y - b.r}"/>
+    // Layer label
+    svg += `<text x="${boxX + 14}" y="${boxY + 20}" class="layer-label" fill="${layer.color}">${layer.label}</text>`;
+
+    // Sub label
+    svg += `<text x="${boxX + 14}" y="${boxY + 35}" class="layer-sub" fill="${theme.muted}">${layer.sub}</text>`;
+
+    // Status dot
+    svg += `<circle cx="${boxX + boxW - 16}" cy="${boxY + boxH / 2}" r="4" fill="${theme.success}" opacity="0.7">
+      <animate attributeName="opacity" values="0.5;0.9;0.5" dur="3s" repeatCount="indefinite" begin="${i * 0.3}s"/>
     </circle>`;
-  }).join('\n    ');
 
-  const nodeElements = nodes.map((n, i) => `
-    <circle cx="${n.x}" cy="${n.y}" r="${n.r}" fill="${theme.surface}" stroke="${n.color}" stroke-width="1.5" opacity="0">
-      <animate attributeName="opacity" values="0;1" dur="0.5s" begin="${i * 0.15}s" fill="freeze"/>
-    </circle>
-    <text x="${n.x}" y="${n.y + 1}" text-anchor="middle" font-family="'SF Mono','Consolas',monospace" font-size="${n.r > 18 ? 8 : 7}" fill="${n.color}" opacity="0">
-      ${esc(n.label)}
-      <animate attributeName="opacity" values="0;1" dur="0.3s" begin="${i * 0.15 + 0.2}s" fill="freeze"/>
-    </text>
-    ${n.sublabel ? `<text x="${n.x}" y="${n.y + 12}" text-anchor="middle" font-family="'SF Mono','Consolas',monospace" font-size="6" fill="${theme.muted}" opacity="0">
-      ${esc(n.sublabel)}
-      <animate attributeName="opacity" values="0;0.6" dur="0.3s" begin="${i * 0.15 + 0.3}s" fill="freeze"/>
-    </text>` : ''}
-    <circle cx="${n.x}" cy="${n.y}" r="${n.r + 6}" fill="none" stroke="${n.color}" stroke-width="0.5" opacity="0">
-      <animate attributeName="opacity" values="0;0.15;0" dur="3s" repeatCount="indefinite" begin="${i * 0.2}s"/>
-      <animate attributeName="r" values="${n.r + 4};${n.r + 10};${n.r + 4}" dur="3s" repeatCount="indefinite" begin="${i * 0.2}s"/>
-    </circle>`).join('\n');
+    // Web tier — show two servers
+    if (layer.label === 'WEB TIER') {
+      const sW = 80;
+      const sH = 28;
+      [-55, 55].forEach((offset, si) => {
+        const sx = 400 + offset - sW / 2;
+        const sy = boxY + boxH + 6;
+        svg += `<rect x="${sx}" y="${sy}" width="${sW}" height="${sH}" rx="4" fill="${theme.surfaceAlt}" stroke="${theme.border}" stroke-width="0.5"/>`;
+        svg += `<text x="${sx + sW / 2}" y="${sy + 17}" text-anchor="middle" font-family="'Segoe UI',system-ui,sans-serif" font-size="9" fill="${theme.muted}">Server ${si + 1}</text>`;
+        // Connection from main box to servers
+        svg += `<line x1="400" y1="${boxY + boxH}" x2="${sx + sW / 2}" y2="${sy}" stroke="${theme.border}" stroke-width="0.8" stroke-dasharray="3,3"/>`;
+      });
+    }
 
-  const layerLabels = [
-    { y: 40 + layerH - 12, label: 'LAYER 01 — EDGE SECURITY' },
-    { y: 40 + layerH * 2 - 12, label: 'LAYER 02 — TRAFFIC MANAGEMENT' },
-    { y: 40 + layerH * 3 - 12, label: 'LAYER 03 — WEB TIER' },
-    { y: 40 + layerH * 4 - 12, label: 'LAYER 04 — APPLICATION' },
-    { y: 40 + layerH * 5 - 12, label: 'LAYER 05 — DATA' },
-    { y: 40 + layerH * 6 - 12, label: 'LAYER 06 — MONITORING & BACKUP' },
-  ];
+    // Database — show primary/replica split
+    if (layer.label === 'DATABASE') {
+      const dW = 90;
+      const dH = 28;
+      [-50, 50].forEach((offset, di) => {
+        const dx = 400 + offset - dW / 2;
+        const dy = boxY + boxH + 6;
+        svg += `<rect x="${dx}" y="${dy}" width="${dW}" height="${dH}" rx="4" fill="${theme.surfaceAlt}" stroke="${theme.border}" stroke-width="0.5"/>`;
+        svg += `<text x="${dx + dW / 2}" y="${dy + 17}" text-anchor="middle" font-family="'Segoe UI',system-ui,sans-serif" font-size="9" fill="${theme.muted}">${di === 0 ? 'Primary' : 'Replica'}</text>`;
+        svg += `<line x1="400" y1="${boxY + boxH}" x2="${dx + dW / 2}" y2="${dy}" stroke="${theme.border}" stroke-width="0.8" stroke-dasharray="3,3"/>`;
+      });
+    }
+  });
 
-  const labels = layerLabels.map(l => `
-    <text x="${w - 30}" y="${l.y}" text-anchor="end" font-family="'SF Mono','Consolas',monospace" font-size="7" fill="${theme.muted}" opacity="0.35" letter-spacing="0.5">${esc(l.label)}</text>`).join('\n');
+  // Supporting services — right column
+  const svcX = 620;
+  const svcStartY = 80;
+  svg += `<rect x="${svcX - 10}" y="${svcStartY - 10}" width="160" height="${services.length * 22 + 20}" rx="6" fill="${theme.surface}" stroke="${theme.border}" stroke-width="0.5" opacity="0.6"/>`;
+  svg += `<text x="${svcX + 65}" y="${svcStartY + 4}" text-anchor="middle" font-family="'Segoe UI',system-ui,sans-serif" font-size="9" font-weight="600" letter-spacing="1" fill="${theme.muted}">SUPPORTING</text>`;
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}">
-  <defs>
-    <linearGradient id="na-accent" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:${theme.primary};stop-opacity:0.8"/>
-      <stop offset="100%" style="stop-color:${theme.secondary};stop-opacity:0.8"/>
-    </linearGradient>
-    <filter id="na-glow">
-      <feGaussianBlur stdDeviation="2" result="b"/>
-      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-    </filter>
-    <filter id="na-soft">
-      <feGaussianBlur stdDeviation="50"/>
-    </filter>
-  </defs>
+  services.forEach((svc, i) => {
+    const sy = svcStartY + 20 + i * 22;
+    svg += `<text x="${svcX}" y="${sy}" class="service-text">${svc.icon} ${svc.name}</text>`;
+  });
 
-  <rect width="${w}" height="${h}" fill="${theme.background}"/>
-  <ellipse cx="${w / 2}" cy="${h / 2}" rx="300" ry="200" fill="${theme.primary}" opacity="0.02" filter="url(#na-soft)"/>
+  // Backup / Monitoring layer at bottom
+  const backupY = 590;
+  svg += `<rect x="150" y="${backupY}" width="500" height="24" rx="4" fill="${theme.surfaceAlt}" stroke="${theme.border}" stroke-width="0.5" opacity="0.5"/>`;
+  svg += `<text x="400" y="${backupY + 16}" text-anchor="middle" font-family="'Segoe UI',system-ui,sans-serif" font-size="9" fill="${theme.muted}">BACKUP  ·  MONITORING  ·  LOGGING</text>`;
 
-  <g opacity="0.015" stroke="${theme.primary}" stroke-width="0.5">
-    ${Array.from({ length: Math.floor(h / 50) + 1 }, (_, i) => `<line x1="0" y1="${i * 50}" x2="${w}" y2="${i * 50}"/>`).join('\n    ')}
-    ${Array.from({ length: Math.floor(w / 100) + 1 }, (_, i) => `<line x1="${i * 100}" y1="0" x2="${i * 100}" y2="${h}"/>`).join('\n    ')}
-  </g>
+  // Connection from database to backup
+  svg += `<line x1="400" y1="578" x2="400" y2="${backupY}" stroke="${theme.border}" stroke-width="0.8" stroke-dasharray="3,3"/>`;
 
-  <g opacity="0.15">
-    <rect x="30" y="28" width="2" height="${h - 56}" rx="1" fill="${theme.primary}" opacity="0.1"/>
-  </g>
-
-  <g>
-    ${connLines}
-  </g>
-
-  <g>
-    ${packets}
-  </g>
-
-  <g>
-    ${nodeElements}
-  </g>
-
-  ${labels}
-
-  <rect x="30" y="${h - 20}" width="${w - 60}" height="0.5" fill="url(#na-accent)" opacity="0.2"/>
-</svg>`;
+  svg += `</svg>`;
+  return svg;
 }

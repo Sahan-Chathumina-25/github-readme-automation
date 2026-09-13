@@ -1,138 +1,110 @@
-import type { ThemeConfig } from '../theme.js';
+import type { ProfileConfig } from '../types';
 
-function esc(str: string): string {
-  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
+export function generateCertifications(config: ProfileConfig): string {
+  const W = 800;
+  const certs = config.certifications;
+  const t = config.theme;
 
-export interface CertEntry {
-  name: string;
-  provider: string;
-  status: string;
-  year?: string;
-  module?: string;
-}
+  // Separate CCNA modules from other certs
+  const ccnaModules = certs.filter(c => c.name.startsWith('CCNA'));
+  const otherCerts = certs.filter(c => !c.name.startsWith('CCNA'));
 
-export function generateCertifications(certs: CertEntry[], theme: ThemeConfig): string {
-  if (certs.length === 0) return '';
+  const headerH = 50;
+  const timelineX = 120;
+  const certH = 60;
+  const ccnaH = ccnaModules.length * 36 + 40;
+  const otherH = otherCerts.length * certH;
+  const gap = 20;
+  const H = headerH + ccnaH + gap + otherH + 40;
 
-  const w = 700;
-  const pad = 50;
-  const lineX = 40;
+  let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}">`;
+  svg += `<defs>`;
+  svg += `<style>
+    @keyframes checkPulse { 0%,100%{opacity:0.8} 50%{opacity:1} }
+    .cert-name { font-family:'Segoe UI',system-ui,sans-serif; font-size:12px; font-weight:600; fill:${t.highlight}; }
+    .cert-provider { font-family:'Segoe UI',system-ui,sans-serif; font-size:10px; fill:${t.muted}; }
+    .cert-year { font-family:'Segoe UI',system-ui,sans-serif; font-size:9px; fill:${t.muted}; }
+    .module-text { font-family:'Segoe UI',system-ui,sans-serif; font-size:10px; fill:${t.highlight}; }
+    .module-num { font-family:'Segoe UI',system-ui,sans-serif; font-size:9px; font-weight:600; fill:${t.primary}; }
+    .ccna-title { font-family:'Segoe UI',system-ui,sans-serif; font-size:13px; font-weight:700; fill:${t.highlight}; }
+    .ccna-sub { font-family:'Segoe UI',system-ui,sans-serif; font-size:10px; fill:${t.muted}; }
+  </style>`;
+  svg += `</defs>`;
 
-  const statusColor = (s: string) => {
-    if (s === 'Completed') return theme.success;
-    if (s === 'In Progress') return theme.primary;
-    return theme.muted;
-  };
+  // Background
+  svg += `<rect width="${W}" height="${H}" fill="${t.background}" rx="8"/>`;
 
-  const grouped: { provider: string; items: CertEntry[] }[] = [];
-  for (const cert of certs) {
-    const existing = grouped.find(g => g.provider === cert.provider);
-    if (existing) {
-      existing.items.push(cert);
-    } else {
-      grouped.push({ provider: cert.provider, items: [cert] });
+  // Header
+  svg += `<text x="40" y="32" font-family="'Segoe UI',system-ui,sans-serif" font-size="14" font-weight="700" fill="${t.highlight}">CERTIFICATIONS &amp; COURSES</text>`;
+
+  // Timeline vertical line
+  const tlStartY = headerH + 10;
+  const tlEndY = H - 20;
+  svg += `<line x1="${timelineX}" y1="${tlStartY}" x2="${timelineX}" y2="${tlEndY}" stroke="${t.border}" stroke-width="1.5"/>`;
+
+  // CCNA Section
+  let currentY = tlStartY + 20;
+
+  // CCNA header node
+  svg += `<circle cx="${timelineX}" cy="${currentY}" r="6" fill="${t.primary}" opacity="0.8"/>`;
+  svg += `<circle cx="${timelineX}" cy="${currentY}" r="10" fill="none" stroke="${t.primary}" stroke-width="1" opacity="0.3"/>`;
+  svg += `<text x="${timelineX + 20}" y="${currentY + 4}" class="ccna-title">CCNA — Cisco Certified Network Associate</text>`;
+  svg += `<text x="${timelineX + 20}" y="${currentY + 18}" class="ccna-sub">Cisco Networking Academy · 3 Modules · All Completed</text>`;
+
+  currentY += 30;
+
+  // CCNA modules
+  ccnaModules.forEach((mod, i) => {
+    const modY = currentY + i * 36;
+    const isCompleted = mod.status === 'Completed';
+
+    // Branch line from main timeline
+    svg += `<line x1="${timelineX}" y1="${modY}" x2="${timelineX + 10}" y2="${modY}" stroke="${t.border}" stroke-width="1"/>`;
+
+    // Module node
+    svg += `<circle cx="${timelineX + 14}" cy="${modY}" r="4" fill="${isCompleted ? t.success : t.warning}" opacity="0.8"/>`;
+
+    // Module number
+    const modNum = mod.module || `Module 0${i + 1}`;
+    svg += `<text x="${timelineX + 26}" y="${modY + 4}" class="module-num">${modNum}</text>`;
+
+    // Module name
+    const shortName = mod.name.replace('CCNA: ', '');
+    svg += `<text x="${timelineX + 80}" y="${modY + 4}" class="module-text">${shortName}</text>`;
+
+    // Status check
+    if (isCompleted) {
+      svg += `<text x="${W - 40}" y="${modY + 4}" text-anchor="end" font-family="'Segoe UI',system-ui,sans-serif" font-size="9" fill="${t.success}">✓ COMPLETED</text>`;
     }
-  }
+  });
 
-  let totalItems = 0;
-  const sections: string[] = [];
+  currentY += ccnaModules.length * 36 + gap;
 
-  for (const group of grouped) {
-    const isMultiModule = group.items.length > 1 && group.items.some(c => c.module);
+  // Other certifications
+  otherCerts.forEach((cert, i) => {
+    const certY = currentY + i * certH;
+    const isCompleted = cert.status === 'Completed';
 
-    if (isMultiModule) {
-      const certName = group.items[0].name.replace(/:.*/, '');
-      const year = group.items[0].year || '';
-      const allCompleted = group.items.every(c => c.status === 'Completed');
+    // Timeline node
+    svg += `<circle cx="${timelineX}" cy="${certY + 10}" r="5" fill="${isCompleted ? t.success : t.warning}" opacity="0.8"/>`;
 
-      sections.push(`
-  <!-- ${certName} Header -->
-  <g opacity="0">
-    <animate attributeName="opacity" values="0;1" dur="0.5s" begin="${totalItems * 0.2}s" fill="freeze"/>
+    // Connector line
+    svg += `<line x1="${timelineX + 5}" y1="${certY + 10}" x2="${timelineX + 16}" y2="${certY + 10}" stroke="${t.border}" stroke-width="1"/>`;
 
-    <circle cx="${lineX}" cy="${30 + totalItems * 80}" r="10" fill="${theme.background}" stroke="${allCompleted ? theme.success : theme.primary}" stroke-width="2"/>
-    <circle cx="${lineX}" cy="${30 + totalItems * 80}" r="4" fill="${allCompleted ? theme.success : theme.primary}" opacity="0.8">
-      <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite"/>
-    </circle>
+    // Card
+    svg += `<rect x="${timelineX + 20}" y="${certY - 6}" width="400" height="44" rx="6" fill="${t.surface}" stroke="${t.border}" stroke-width="1"/>`;
 
-    <rect x="${pad}" y="${30 + totalItems * 80 - 18}" width="${w - pad - 20}" height="36" rx="8" fill="${theme.surface}" opacity="0.7"/>
-    <rect x="${pad}" y="${30 + totalItems * 80 - 18}" width="${w - pad - 20}" height="36" rx="8" fill="none" stroke="${allCompleted ? theme.success : theme.primary}" stroke-width="0.8" opacity="0.4"/>
+    // Cert name
+    svg += `<text x="${timelineX + 34}" y="${certY + 12}" class="cert-name">${cert.name}</text>`;
 
-    <text x="${pad + 16}" y="${30 + totalItems * 80 + 2}" font-family="'Segoe UI','Inter',Arial,sans-serif" font-size="15" font-weight="700" fill="${theme.highlight}">${esc(certName)}</text>
-    <text x="${w - pad - 16}" y="${30 + totalItems * 80 + 2}" text-anchor="end" font-family="'SF Mono','Consolas',monospace" font-size="10" fill="${theme.muted}">${esc(year)}</text>
-  </g>`);
+    // Provider + year
+    svg += `<text x="${timelineX + 34}" y="${certY + 26}" class="cert-provider">${cert.provider} · ${cert.year}</text>`;
 
-      totalItems++;
+    // Status badge
+    const badgeColor = isCompleted ? t.success : t.warning;
+    svg += `<text x="${W - 40}" y="${certY + 14}" text-anchor="end" font-family="'Segoe UI',system-ui,sans-serif" font-size="9" fill="${badgeColor}">✓ ${cert.status.toUpperCase()}</text>`;
+  });
 
-      for (let j = 0; j < group.items.length; j++) {
-        const item = group.items[j];
-        const color = statusColor(item.status);
-        const y = 30 + totalItems * 80;
-
-        sections.push(`
-  <!-- Module ${j + 1} -->
-  <g opacity="0">
-    <animate attributeName="opacity" values="0;1" dur="0.4s" begin="${totalItems * 0.2}s" fill="freeze"/>
-
-    <line x1="${lineX}" y1="${y - 50}" x2="${lineX}" y2="${y - 10}" stroke="${theme.border}" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.3"/>
-
-    <circle cx="${lineX}" cy="${y}" r="6" fill="${theme.background}" stroke="${color}" stroke-width="1.5"/>
-    <circle cx="${lineX}" cy="${y}" r="2.5" fill="${color}" opacity="0.8"/>
-
-    <rect x="${pad + 20}" y="${y - 14}" width="${w - pad - 40}" height="56" rx="8" fill="${theme.surface}" opacity="0.6"/>
-    <rect x="${pad + 20}" y="${y - 14}" width="${w - pad - 40}" height="56" rx="8" fill="none" stroke="${theme.border}" stroke-width="0.5"/>
-
-    <rect x="${pad + 20}" y="${y - 4}" width="2" height="36" rx="1" fill="${color}" opacity="0.5"/>
-
-    <text x="${pad + 36}" y="${y + 2}" font-family="'SF Mono','Consolas',monospace" font-size="8" fill="${color}" letter-spacing="1" opacity="0.7">${esc(item.module || `MODULE 0${j + 1}`)}</text>
-    <text x="${pad + 36}" y="${y + 18}" font-family="'Segoe UI','Inter',Arial,sans-serif" font-size="12" font-weight="600" fill="${theme.highlight}">${esc(item.name.replace(/.*?:\s*/, ''))}</text>
-
-    <rect x="${w - pad - 100}" y="${y + 2}" width="80" height="20" rx="10" fill="${theme.surfaceAlt}" stroke="${color}" stroke-width="0.8" opacity="0.8"/>
-    <text x="${w - pad - 60}" y="${y + 16}" text-anchor="middle" font-family="'SF Mono','Consolas',monospace" font-size="7" fill="${color}" letter-spacing="0.5">${esc(item.status.toUpperCase())}</text>
-  </g>`);
-
-        totalItems++;
-      }
-    } else {
-      for (const item of group.items) {
-        const color = statusColor(item.status);
-        const y = 30 + totalItems * 80;
-
-        sections.push(`
-  <!-- ${item.name} -->
-  <g opacity="0">
-    <animate attributeName="opacity" values="0;1" dur="0.5s" begin="${totalItems * 0.2}s" fill="freeze"/>
-
-    ${totalItems > 0 ? `<line x1="${lineX}" y1="${y - 50}" x2="${lineX}" y2="${y - 10}" stroke="${theme.border}" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.3"/>` : ''}
-
-    <circle cx="${lineX}" cy="${y}" r="7" fill="${theme.background}" stroke="${color}" stroke-width="2"/>
-    <circle cx="${lineX}" cy="${y}" r="3" fill="${color}" opacity="0.8">
-      <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite" begin="${totalItems * 0.2}s"/>
-    </circle>
-
-    <rect x="${pad}" y="${y - 14}" width="${w - pad - 20}" height="56" rx="10" fill="${theme.surface}" opacity="0.7"/>
-    <rect x="${pad}" y="${y - 14}" width="${w - pad - 20}" height="56" rx="10" fill="none" stroke="${theme.border}" stroke-width="0.5"/>
-
-    <rect x="${pad}" y="${y - 4}" width="2" height="36" rx="1" fill="${color}" opacity="0.5"/>
-
-    <text x="${pad + 16}" y="${y + 4}" font-family="'SF Mono','Consolas',monospace" font-size="11" font-weight="600" fill="${color}">${esc(item.year || '')}</text>
-    <text x="${pad + 16}" y="${y + 22}" font-family="'Segoe UI','Inter',Arial,sans-serif" font-size="14" font-weight="600" fill="${theme.highlight}">${esc(item.name)}</text>
-    <text x="${pad + 16}" y="${y + 36}" font-family="'Segoe UI','Inter',Arial,sans-serif" font-size="11" fill="${theme.muted}">${esc(item.provider)}</text>
-
-    <rect x="${w - pad - 90}" y="${y + 4}" width="76" height="22" rx="11" fill="${theme.surfaceAlt}" stroke="${color}" stroke-width="0.8" opacity="0.8"/>
-    <text x="${w - pad - 52}" y="${y + 19}" text-anchor="middle" font-family="'SF Mono','Consolas',monospace" font-size="8" fill="${color}" letter-spacing="0.5">${esc(item.status.toUpperCase())}</text>
-  </g>`);
-
-        totalItems++;
-      }
-    }
-  }
-
-  const totalH = totalItems * 80 + 40;
-
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${totalH}" width="${w}" height="${totalH}">
-  <line x1="${lineX}" y1="10" x2="${lineX}" y2="${totalH - 10}" stroke="${theme.border}" stroke-width="1" opacity="0.2"/>
-  ${sections.join('\n')}
-</svg>`;
+  svg += `</svg>`;
+  return svg;
 }

@@ -1,21 +1,60 @@
 import { describe, it, expect } from 'vitest';
 import {
   generateHeroBanner,
-  generateSkillCircleRow,
+  generateSkillCircles,
   generateNetworkTopology,
   generateSectionDivider,
   generateAboutCard,
-  generateTerminalSection,
+  generateTerminal,
   generateNetworkArchitecture,
   generateCyberLabs,
-  generateLabDashboard,
+  generateLinuxLabs,
   generateNetworkLabs,
   generateCertifications,
-  generateCinematicFooter,
+  generateFooter,
 } from '../src/svg/index.js';
 import { DEFAULT_THEME } from '../src/theme.js';
+import type { ProfileConfig } from '../src/types.js';
 
 const theme = DEFAULT_THEME;
+
+const mockConfig: ProfileConfig = {
+  profile: {
+    name: 'Test User',
+    username: 'testuser',
+    headline: 'Cybersecurity Student',
+    location: 'Sri Lanka',
+    about: 'Building secure systems. Exploring networks.',
+  },
+  theme: DEFAULT_THEME,
+  skillPercentages: { cybersecurity: 45, networking: 50, linux: 55, programming: 35, fullstack: 30 },
+  education: [],
+  certifications: [
+    { name: 'Red Hat System Administration I', provider: 'Red Hat', status: 'Completed', year: '2026' },
+    { name: 'CCNA: Introduction to Networks', provider: 'Cisco', module: 'Module 01', status: 'Completed', year: '2026' },
+    { name: 'CCNA: Switching, Routing & Wireless Essentials', provider: 'Cisco', module: 'Module 02', status: 'Completed', year: '2026' },
+  ],
+  skills: {
+    cybersecurity: [{ name: 'Ethical Hacking', level: 'Learning' }],
+    networking: [{ name: 'TCP/IP', level: 'Practicing' }],
+    linux: [{ name: 'Linux', level: 'Practicing' }],
+    programming: [{ name: 'WordPress', level: 'Learning' }],
+    tools: [{ name: 'Git', level: 'Practicing' }],
+  },
+  projects: [],
+  ctf: [
+    { platform: 'TryHackMe', category: 'Web', challenge: 'Test challenge', difficulty: 'Easy', skillsLearned: ['SQL'] },
+  ],
+  labs: [
+    { name: 'SSH Lab', technology: ['Linux', 'SSH'], objective: 'Configure SSH', status: 'Completed', repository: '' },
+    { name: 'DNS Lab', technology: ['Linux', 'BIND', 'DNS'], objective: 'Set up DNS', status: 'Completed', repository: '' },
+    { name: 'VLAN Lab', technology: ['Networking', 'VLAN', 'Switching'], objective: 'Configure VLANs', status: 'Planned', repository: '' },
+    { name: 'Subnetting Lab', technology: ['Networking', 'Subnetting'], objective: 'Practice subnetting', status: 'In Progress', repository: '' },
+  ],
+  social: { github: 'testuser' },
+  currentlyLearning: ['Cybersecurity'],
+  featuredRepos: [],
+};
 
 describe('SVG Generators', () => {
   describe('generateHeroBanner', () => {
@@ -32,14 +71,11 @@ describe('SVG Generators', () => {
     });
   });
 
-  describe('generateSkillCircleRow', () => {
+  describe('generateSkillCircles', () => {
     it('generates valid SVG', () => {
-      const svg = generateSkillCircleRow(
-        [{ label: 'Test', percentage: 50 }],
-        theme
-      );
+      const svg = generateSkillCircles(mockConfig);
       expect(svg).toContain('<svg');
-      expect(svg).toContain('Test');
+      expect(svg).toContain('Cybersecurity');
     });
   });
 
@@ -60,23 +96,15 @@ describe('SVG Generators', () => {
 
   describe('generateAboutCard', () => {
     it('generates valid SVG', () => {
-      const svg = generateAboutCard({
-        name: 'Test User',
-        tagline: 'Test',
-        description: 'Test description',
-        focus: ['Focus 1'],
-        stats: [{ label: 'TEST', value: '100' }],
-      }, theme);
+      const svg = generateAboutCard(mockConfig);
       expect(svg).toContain('<svg');
       expect(svg).toContain('Test User');
     });
   });
 
-  describe('generateTerminalSection', () => {
+  describe('generateTerminal', () => {
     it('generates valid SVG', () => {
-      const svg = generateTerminalSection(
-        'user', 'host', ['Identity'], ['Stack'], ['Focus'], theme
-      );
+      const svg = generateTerminal(mockConfig);
       expect(svg).toContain('<svg');
       expect(svg).toContain('whoami');
     });
@@ -94,62 +122,47 @@ describe('SVG Generators', () => {
 
   describe('generateCyberLabs', () => {
     it('generates valid SVG', () => {
-      const svg = generateCyberLabs([
-        { platform: 'TryHackMe', category: 'Web', challenge: 'Test', difficulty: 'Easy', skillsLearned: ['SQL'] },
-      ], theme);
+      const svg = generateCyberLabs(mockConfig);
       expect(svg).toContain('<svg');
-      expect(svg).toContain('CTF 01');
-    });
-
-    it('returns empty for no entries', () => {
-      expect(generateCyberLabs([], theme)).toBe('');
+      expect(svg).toContain('CYBERSECURITY LAB');
     });
   });
 
-  describe('generateLabDashboard', () => {
+  describe('generateLinuxLabs', () => {
     it('generates valid SVG', () => {
-      const svg = generateLabDashboard([
-        { name: 'Test Lab', technology: ['Linux'], objective: 'Test', status: 'Completed' },
-      ], theme, 'Test Labs');
+      const svg = generateLinuxLabs(mockConfig);
       expect(svg).toContain('<svg');
-      expect(svg).toContain('Test Lab');
+      expect(svg).toContain('LINUX LABS');
     });
   });
 
   describe('generateNetworkLabs', () => {
     it('generates valid SVG', () => {
-      const svg = generateNetworkLabs([
-        { name: 'Test Lab', technology: ['DNS'], objective: 'Test', status: 'Completed' },
-      ], theme);
+      const svg = generateNetworkLabs(mockConfig);
       expect(svg).toContain('<svg');
-      expect(svg).toContain('Test Lab');
+      expect(svg).toContain('NETWORKING LABS');
     });
   });
 
   describe('generateCertifications', () => {
     it('generates valid SVG', () => {
-      const svg = generateCertifications([
-        { name: 'Red Hat', provider: 'Red Hat', status: 'Completed', year: '2026' },
-      ], theme);
+      const svg = generateCertifications(mockConfig);
       expect(svg).toContain('<svg');
       expect(svg).toContain('Red Hat');
     });
 
     it('handles CCNA modules', () => {
-      const svg = generateCertifications([
-        { name: 'CCNA: Intro', provider: 'Cisco', status: 'Completed', year: '2026', module: 'Module 01' },
-        { name: 'CCNA: Switching', provider: 'Cisco', status: 'Completed', year: '2026', module: 'Module 02' },
-      ], theme);
+      const svg = generateCertifications(mockConfig);
       expect(svg).toContain('CCNA');
       expect(svg).toContain('Module 01');
+      expect(svg).toContain('Module 02');
     });
   });
 
-  describe('generateCinematicFooter', () => {
+  describe('generateFooter', () => {
     it('generates valid SVG', () => {
-      const svg = generateCinematicFooter(theme);
+      const svg = generateFooter(mockConfig);
       expect(svg).toContain('<svg');
-      expect(svg).toContain('ONLINE');
       expect(svg).toContain('BUILD');
     });
   });

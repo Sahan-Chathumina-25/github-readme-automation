@@ -1,5 +1,9 @@
+import type { ThemeConfig, SkillPercentages } from './theme.js';
+
 export interface ProfileConfig {
   profile: ProfileInfo;
+  theme: ThemeConfig;
+  skillPercentages: SkillPercentages;
   education: Education[];
   certifications: Certification[];
   skills: Skills;
@@ -30,7 +34,7 @@ export interface Certification {
   name: string;
   provider: string;
   status: 'Completed' | 'In Progress' | 'Planned';
-  year?: string;
+  year: string;
   credential?: string;
   module?: string;
 }
@@ -71,7 +75,7 @@ export interface LabEntry {
   name: string;
   technology: string[];
   objective: string;
-  status: 'Completed' | 'In Progress' | 'Planned';
+  status: 'Completed' | 'In Progress' | 'Learning' | 'Planned';
   repository?: string;
 }
 

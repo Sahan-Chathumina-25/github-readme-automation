@@ -10,120 +10,88 @@ import type { ThemeConfig, SkillPercentages } from './theme.js';
 import { DEFAULT_THEME } from './theme.js';
 import {
   generateHeroBanner,
-  generateSkillCircleRow,
+  generateSkillCircles,
   generateNetworkTopology,
   generateFooterAnimation,
   generateAboutCard,
-  generateTerminalSection,
+  generateTerminal,
   generateNetworkArchitecture,
   generateCyberLabs,
-  generateLabDashboard,
+  generateLinuxLabs,
   generateNetworkLabs,
   generateCertifications,
-  generateCinematicFooter,
+  generateFooter,
 } from './svg/index.js';
+import type { ProfileConfig } from './types.js';
 
 const PROJECT_ROOT = process.cwd();
 const GENERATED_DIR = join(PROJECT_ROOT, 'generated');
 const GENERATED_README = join(GENERATED_DIR, 'README.md');
 const ASSETS_DIR = join(PROJECT_ROOT, 'assets');
 
-function generateAssets(theme: ThemeConfig, skillPcts: SkillPercentages): void {
+function generateAssets(config: ProfileConfig, theme: ThemeConfig, skillPcts: SkillPercentages): void {
   if (!existsSync(ASSETS_DIR)) {
     mkdirSync(ASSETS_DIR, { recursive: true });
   }
 
-  const banner = generateHeroBanner('Sahan Chathumina', 'Cybersecurity | Network Engineering | Linux | Full Stack Development | Ethical Hacking', theme);
+  // Hero banner
+  const banner = generateHeroBanner(config.profile.name, config.profile.headline, theme);
   writeFileSync(join(ASSETS_DIR, 'profile-banner.svg'), banner, 'utf-8');
   console.log('  Generated assets/profile-banner.svg');
 
-  const skillCircles = generateSkillCircleRow(
-    [
-      { label: 'Cybersecurity', percentage: skillPcts.cybersecurity },
-      { label: 'Networking', percentage: skillPcts.networking },
-      { label: 'Linux', percentage: skillPcts.linux },
-      { label: 'Full Stack Dev', percentage: skillPcts.fullstack },
-    ],
-    theme
-  );
+  // Skill circles
+  const skillCircles = generateSkillCircles(config);
   writeFileSync(join(ASSETS_DIR, 'skill-circles.svg'), skillCircles, 'utf-8');
   console.log('  Generated assets/skill-circles.svg');
 
+  // Network topology (legacy, kept as fallback)
   const topology = generateNetworkTopology(theme);
   writeFileSync(join(ASSETS_DIR, 'network-topology.svg'), topology, 'utf-8');
   console.log('  Generated assets/network-topology.svg');
 
-  const footer = generateFooterAnimation(theme);
-  writeFileSync(join(ASSETS_DIR, 'footer-animation.svg'), footer, 'utf-8');
+  // Footer animation (legacy, kept as fallback)
+  const footerAnim = generateFooterAnimation(theme);
+  writeFileSync(join(ASSETS_DIR, 'footer-animation.svg'), footerAnim, 'utf-8');
   console.log('  Generated assets/footer-animation.svg');
 
-  const aboutCard = generateAboutCard({
-    name: 'Sahan Chathumina',
-    tagline: 'Cybersecurity • Network Engineering • Linux • Full Stack Development',
-    description: 'Building secure systems. Exploring networks. Developing practical digital solutions. An undergraduate studying Ethical Hacking & Network Security with a passion for understanding how systems work and how to secure them.',
-    focus: ['CYBERSECURITY', 'NETWORKING', 'LINUX', 'FULL STACK'],
-    stats: [
-      { label: 'FOCUS', value: 'Security' },
-      { label: 'SYSTEMS', value: 'Linux' },
-      { label: 'STACK', value: 'WordPress' },
-      { label: 'STATUS', value: 'Learning' },
-    ],
-  }, theme);
+  // About card
+  const aboutCard = generateAboutCard(config);
   writeFileSync(join(ASSETS_DIR, 'about-card.svg'), aboutCard, 'utf-8');
   console.log('  Generated assets/about-card.svg');
 
-  const terminal = generateTerminalSection(
-    'sahan.chathumina',
-    'cyberlab',
-    ['Cybersecurity Student', 'Network Engineering', 'Linux', 'Full Stack Development'],
-    ['WordPress', 'PHP', 'MySQL', 'HTML', 'CSS', 'JavaScript'],
-    ['Security', 'Networks', 'Systems', 'Web'],
-    theme
-  );
+  // Terminal
+  const terminal = generateTerminal(config);
   writeFileSync(join(ASSETS_DIR, 'terminal.svg'), terminal, 'utf-8');
   console.log('  Generated assets/terminal.svg');
 
+  // Network architecture
   const netArch = generateNetworkArchitecture(theme);
   writeFileSync(join(ASSETS_DIR, 'network-architecture.svg'), netArch, 'utf-8');
   console.log('  Generated assets/network-architecture.svg');
 
-  const config = loadConfig();
-
-  const cyberLabs = generateCyberLabs(config.ctf, theme);
+  // Cyber labs
+  const cyberLabs = generateCyberLabs(config);
   writeFileSync(join(ASSETS_DIR, 'cyber-labs.svg'), cyberLabs, 'utf-8');
   console.log('  Generated assets/cyber-labs.svg');
 
-  const linuxLabs = config.labs.filter((l) =>
-    l.technology.some((t) =>
-      ['linux', 'centos', 'rocky', 'bash', 'ssh', 'apache', 'firewalld', 'systemd', 'selinux', 'auditd'].includes(t.toLowerCase())
-    )
-  );
-  const linuxDashboard = generateLabDashboard(
-    linuxLabs.map(l => ({ name: l.name, technology: l.technology, objective: l.objective, status: l.status })),
-    theme,
-    'Linux Labs'
-  );
-  writeFileSync(join(ASSETS_DIR, 'linux-labs.svg'), linuxDashboard, 'utf-8');
+  // Linux labs
+  const linuxLabs = generateLinuxLabs(config);
+  writeFileSync(join(ASSETS_DIR, 'linux-labs.svg'), linuxLabs, 'utf-8');
   console.log('  Generated assets/linux-labs.svg');
 
-  const netLabs = config.labs.filter((l) =>
-    l.technology.some((t) =>
-      ['networking', 'cisco', 'vlan', 'routing', 'switching', 'dns', 'dhcp', 'haproxy', 'subnetting'].includes(t.toLowerCase())
-    )
-  );
-  const networkDashboard = generateNetworkLabs(
-    netLabs.map(l => ({ name: l.name, technology: l.technology, objective: l.objective, status: l.status })),
-    theme
-  );
-  writeFileSync(join(ASSETS_DIR, 'network-labs.svg'), networkDashboard, 'utf-8');
+  // Network labs
+  const networkLabs = generateNetworkLabs(config);
+  writeFileSync(join(ASSETS_DIR, 'network-labs.svg'), networkLabs, 'utf-8');
   console.log('  Generated assets/network-labs.svg');
 
-  const certs = generateCertifications(config.certifications, theme);
+  // Certifications
+  const certs = generateCertifications(config);
   writeFileSync(join(ASSETS_DIR, 'certifications.svg'), certs, 'utf-8');
   console.log('  Generated assets/certifications.svg');
 
-  const cinematicFooter = generateCinematicFooter(theme);
-  writeFileSync(join(ASSETS_DIR, 'footer-cinematic.svg'), cinematicFooter, 'utf-8');
+  // Footer
+  const footer = generateFooter(config);
+  writeFileSync(join(ASSETS_DIR, 'footer-cinematic.svg'), footer, 'utf-8');
   console.log('  Generated assets/footer-cinematic.svg');
 }
 
@@ -144,7 +112,7 @@ async function main() {
       const skillPcts: SkillPercentages = (config as any).skillPercentages ?? { cybersecurity: 45, networking: 50, linux: 55, programming: 35, fullstack: 30 };
 
       console.log('Generating visual assets...');
-      generateAssets(theme, skillPcts);
+      generateAssets(config, theme, skillPcts);
 
       let githubData = undefined;
       if (token) {
@@ -239,7 +207,7 @@ async function main() {
         githubData = await fetchGitHubData(config.profile.username, token);
       } catch { /* continue */ }
 
-      generateAssets(theme, skillPcts);
+      generateAssets(config, theme, skillPcts);
       const readme = generateREADME(config, githubData, { theme, skillPercentages: skillPcts });
 
       const validation = validateMarkdown(readme);

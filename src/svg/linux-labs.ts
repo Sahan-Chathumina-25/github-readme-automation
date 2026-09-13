@@ -1,72 +1,89 @@
-import type { ThemeConfig } from '../theme.js';
+import type { ProfileConfig } from '../types';
 
-function esc(str: string): string {
-  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
+export function generateLinuxLabs(config: ProfileConfig): string {
+  const W = 800;
+  const t = config.theme;
+  const labs = config.labs.filter(l =>
+    l.technology.some(tech =>
+      ['Linux', 'SSH', 'Apache', 'BIND', 'DHCP', 'firewalld', 'SELinux', 'systemd', 'CentOS', 'Bash'].includes(tech)
+    )
+  );
 
-export interface LabEntry {
-  name: string;
-  technology: string[];
-  objective: string;
-  status: 'Completed' | 'In Progress' | 'Planned' | 'Learning';
-}
+  const cardW = 170;
+  const cardH = 100;
+  const gap = 14;
+  const cols = 4;
+  const totalW = cols * cardW + (cols - 1) * gap;
+  const startX = (W - totalW) / 2;
+  const headerH = 50;
+  const rows = Math.ceil(labs.length / cols);
+  const H = headerH + rows * (cardH + gap) + 20;
 
-export function generateLabDashboard(labs: LabEntry[], theme: ThemeConfig, title: string): string {
-  if (labs.length === 0) return '';
+  let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}">`;
+  svg += `<defs>`;
+  svg += `<style>
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+    .lab-name { font-family:'Segoe UI',system-ui,sans-serif; font-size:11px; font-weight:600; fill:${t.highlight}; }
+    .lab-obj { font-family:'Segoe UI',system-ui,sans-serif; font-size:8px; fill:${t.muted}; }
+    .lab-tech { font-family:'Segoe UI',system-ui,sans-serif; font-size:8px; fill:${t.primary}; }
+    .status-text { font-family:'Segoe UI',system-ui,sans-serif; font-size:8px; }
+  </style>`;
+  svg += `</defs>`;
 
-  const w = 700;
-  const rowH = 56;
-  const gap = 6;
-  const pad = 24;
-  const totalH = labs.length * (rowH + gap) + pad * 2 + 30;
+  // Background
+  svg += `<rect width="${W}" height="${H}" fill="${t.background}" rx="8"/>`;
 
-  const statusColor = (s: string) => {
-    if (s === 'Completed') return theme.success;
-    if (s === 'In Progress') return theme.primary;
-    if (s === 'Learning') return theme.secondary;
-    return theme.muted;
-  };
+  // Header
+  svg += `<text x="40" y="32" font-family="'Segoe UI',system-ui,sans-serif" font-size="14" font-weight="700" fill="${t.highlight}">LINUX LABS</text>`;
+  svg += `<text x="40" y="46" font-family="'Segoe UI',system-ui,sans-serif" font-size="10" fill="${t.muted}">Server Administration &amp; System Configuration</text>`;
 
-  const statusLabel = (s: string) => s.toUpperCase();
+  // Terminal cursor in header
+  svg += `<rect x="330" y="36" width="7" height="12" fill="${t.primary}" opacity="0.8">
+    <animate attributeName="opacity" values="0.8;0;0.8" dur="1.2s" repeatCount="indefinite"/>
+  </rect>`;
 
-  const rows = labs.map((lab, i) => {
-    const y = pad + 30 + i * (rowH + gap);
-    const color = statusColor(lab.status);
-    const delay = i * 0.12;
+  labs.forEach((lab, i) => {
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+    const x = startX + col * (cardW + gap);
+    const y = headerH + 10 + row * (cardH + gap);
 
-    return `
-  <g opacity="0" transform="translate(0, 6)">
-    <animate attributeName="opacity" values="0;1" dur="0.4s" begin="${delay}s" fill="freeze"/>
-    <animateTransform attributeName="transform" type="translate" values="0 6;0 0" dur="0.4s" begin="${delay}s" fill="freeze"/>
+    const isCompleted = lab.status === 'Completed';
+    const isInProgress = lab.status === 'In Progress';
+    const statusColor = isCompleted ? t.success : isInProgress ? t.warning : t.primary;
 
-    <rect x="${pad}" y="${y}" width="${w - pad * 2}" height="${rowH}" rx="8" fill="${theme.surface}" opacity="0.8"/>
-    <rect x="${pad}" y="${y}" width="${w - pad * 2}" height="${rowH}" rx="8" fill="none" stroke="${theme.border}" stroke-width="0.5"/>
+    // Card
+    svg += `<rect x="${x}" y="${y}" width="${cardW}" height="${cardH}" rx="6" fill="${t.surface}" stroke="${t.border}" stroke-width="1"/>`;
 
-    <rect x="${pad}" y="${y + 8}" width="3" height="${rowH - 16}" rx="1.5" fill="${color}" opacity="0.7"/>
+    // Top accent line
+    svg += `<rect x="${x}" y="${y}" width="${cardW}" height="2" rx="1" fill="${statusColor}" opacity="0.5"/>`;
 
-    <text x="${pad + 16}" y="${y + 20}" font-family="'Segoe UI','Inter',Arial,sans-serif" font-size="13" font-weight="600" fill="${theme.highlight}">${esc(lab.name)}</text>
+    // Terminal prompt
+    svg += `<text x="${x + 10}" y="${y + 22}" font-family="'Courier New',monospace" font-size="9" fill="${t.muted}">$</text>`;
 
-    <text x="${pad + 16}" y="${y + 36}" font-family="'Segoe UI','Inter',Arial,sans-serif" font-size="10" fill="${theme.muted}">${esc(lab.objective.length > 55 ? lab.objective.substring(0, 52) + '...' : lab.objective)}</text>
+    // Lab name
+    svg += `<text x="${x + 20}" y="${y + 22}" class="lab-name">${lab.name}</text>`;
 
-    <text x="${pad + 16}" y="${y + 50}" font-family="'SF Mono','Consolas',monospace" font-size="8" fill="${theme.muted}" opacity="0.5">${esc(lab.technology.join('  •  '))}</text>
+    // Status dot + text
+    svg += `<circle cx="${x + 12}" cy="${y + 38}" r="3" fill="${statusColor}" opacity="0.8">
+      <animate attributeName="opacity" values="0.6;1;0.6" dur="2s" repeatCount="indefinite" begin="${i * 0.2}s"/>
+    </circle>`;
+    svg += `<text x="${x + 20}" y="${y + 42}" class="status-text" fill="${statusColor}">${lab.status.toUpperCase()}</text>`;
 
-    <rect x="${w - pad - 90}" y="${y + 12}" width="76" height="22" rx="11" fill="${theme.surfaceAlt}" stroke="${color}" stroke-width="0.8" opacity="0.8"/>
-    <circle cx="${w - pad - 80}" cy="${y + 23}" r="3" fill="${color}" opacity="0.8"/>
-    <text x="${w - pad - 52}" y="${y + 28}" text-anchor="middle" font-family="'SF Mono','Consolas',monospace" font-size="8" fill="${color}" letter-spacing="0.5">${statusLabel(lab.status)}</text>
-  </g>`;
-  }).join('');
+    // Objective (truncated)
+    const objText = lab.objective.length > 35 ? lab.objective.substring(0, 35) + '...' : lab.objective;
+    svg += `<text x="${x + 10}" y="${y + 60}" class="lab-obj">${objText}</text>`;
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${totalH}" width="${w}" height="${totalH}">
-  <defs>
-    <linearGradient id="ld-accent" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:${theme.primary};stop-opacity:0.6"/>
-      <stop offset="100%" style="stop-color:${theme.secondary};stop-opacity:0.6"/>
-    </linearGradient>
-  </defs>
+    // Technology pills
+    let pillX = x + 10;
+    lab.technology.slice(0, 3).forEach((tech) => {
+      const pw = tech.length * 4.5 + 8;
+      svg += `<rect x="${pillX}" y="${y + cardH - 22}" width="${pw}" height="14" rx="7" fill="${t.surfaceAlt}" stroke="${t.border}" stroke-width="0.5"/>`;
+      svg += `<text x="${pillX + pw / 2}" y="${y + cardH - 12}" text-anchor="middle" class="lab-tech">${tech}</text>`;
+      pillX += pw + 4;
+    });
+  });
 
-  <text x="${pad}" y="${pad + 14}" font-family="'SF Mono','Cascadia Code','Consolas',monospace" font-size="10" fill="${theme.primary}" letter-spacing="1.5" opacity="0.7">${esc(title.toUpperCase())}</text>
-  <line x1="${pad}" y1="${pad + 22}" x2="${w - pad}" y2="${pad + 22}" stroke="url(#ld-accent)" stroke-width="0.5" opacity="0.3"/>
-
-  ${rows}
-</svg>`;
+  svg += `</svg>`;
+  return svg;
 }

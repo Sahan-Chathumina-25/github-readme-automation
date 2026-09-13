@@ -1,80 +1,96 @@
-import type { ThemeConfig } from '../theme.js';
+import type { ProfileConfig } from '../types';
 
-function esc(str: string): string {
-  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+interface SkillCategory {
+  name: string;
+  skills: { name: string; level: string }[];
+  color: string;
+  icon: string;
 }
 
-export interface SkillCircle {
-  label: string;
-  percentage: number;
-}
+export function generateSkillCircles(config: ProfileConfig): string {
+  const W = 680;
+  const H = 320;
+  const t = config.theme;
+  const sp = config.skillPercentages;
 
-export function generateSkillCircle(
-  skill: SkillCircle,
-  theme: ThemeConfig,
-  size = 150
-): string {
-  const cx = size / 2;
-  const cy = size / 2;
-  const radius = size / 2 - 16;
-  const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (skill.percentage / 100) * circumference;
-  const id = skill.label.replace(/\s/g, '');
+  const categories: SkillCategory[] = [
+    { name: 'Cybersecurity', skills: config.skills.cybersecurity, color: t.primary, icon: '🛡' },
+    { name: 'Networking', skills: config.skills.networking, color: t.secondary, icon: '🌐' },
+    { name: 'Linux & Systems', skills: config.skills.linux, color: t.success, icon: '⚙' },
+    { name: 'Full Stack', skills: config.skills.programming, color: '#FFB800', icon: '⚡' },
+  ];
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size + 30}" width="${size}" height="${size + 30}">
-  <defs>
-    <linearGradient id="sc-grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:${theme.primary};stop-opacity:1"/>
-      <stop offset="100%" style="stop-color:${theme.secondary};stop-opacity:1"/>
-    </linearGradient>
-    <filter id="sc-glow-${id}">
-      <feGaussianBlur stdDeviation="3" result="b"/>
-      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-    </filter>
-    <radialGradient id="sc-glass-${id}" cx="40%" cy="35%" r="55%">
-      <stop offset="0%" style="stop-color:${theme.highlight};stop-opacity:0.06"/>
-      <stop offset="100%" style="stop-color:${theme.highlight};stop-opacity:0"/>
-    </radialGradient>
-  </defs>
+  const cardW = 148;
+  const cardH = 230;
+  const gap = 16;
+  const totalW = categories.length * cardW + (categories.length - 1) * gap;
+  const startX = (W - totalW) / 2;
+  const startY = 50;
 
-  <circle cx="${cx}" cy="${cy}" r="${radius + 8}" fill="none" stroke="${theme.border}" stroke-width="0.5" opacity="0.2"/>
+  let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}">`;
+  svg += `<defs>`;
+  svg += `<style>
+    .cat-name { font-family:'Segoe UI',system-ui,sans-serif; font-size:11px; font-weight:600; fill:${t.highlight}; }
+    .pct-text { font-family:'Segoe UI',system-ui,sans-serif; font-size:16px; font-weight:700; fill:${t.highlight}; }
+    .skill-name { font-family:'Segoe UI',system-ui,sans-serif; font-size:8px; fill:${t.muted}; }
+    .skill-level { font-family:'Segoe UI',system-ui,sans-serif; font-size:7px; }
+  </style>`;
+  svg += `</defs>`;
 
-  <circle cx="${cx}" cy="${cy}" r="${radius}" fill="none" stroke="${theme.border}" stroke-width="5" opacity="0.3"/>
+  // Background
+  svg += `<rect width="${W}" height="${H}" fill="${t.background}" rx="8"/>`;
 
-  <circle cx="${cx}" cy="${cy}" r="${radius}" fill="none" stroke="url(#sc-grad-${id})" stroke-width="5" stroke-linecap="round" stroke-dasharray="${circumference}" stroke-dashoffset="${offset}" transform="rotate(-90 ${cx} ${cy})" filter="url(#sc-glow-${id})">
-    <animate attributeName="stroke-dashoffset" from="${circumference}" to="${offset}" dur="1.8s" fill="freeze" calcMode="spline" keySplines="0.4 0 0.2 1"/>
-  </circle>
+  // Title
+  svg += `<text x="${W / 2}" y="28" text-anchor="middle" font-family="'Segoe UI',system-ui,sans-serif" font-size="12" font-weight="600" fill="${t.muted}" letter-spacing="2">SKILL OVERVIEW</text>`;
 
-  <circle cx="${cx}" cy="${cy}" r="${radius - 10}" fill="url(#sc-glass-${id})" opacity="0.5"/>
+  categories.forEach((cat, i) => {
+    const x = startX + i * (cardW + gap);
+    const y = startY;
+    const pctKey = cat.name === 'Cybersecurity' ? 'cybersecurity' : cat.name === 'Networking' ? 'networking' : cat.name.includes('Linux') ? 'linux' : 'fullstack';
+    const pct = sp[pctKey] || 0;
+    const radius = 42;
+    const cx = x + cardW / 2;
+    const cy = y + 60;
+    const circumference = 2 * Math.PI * radius;
+    const dashOffset = circumference * (1 - pct / 100);
 
-  <circle cx="${cx}" cy="${cy - radius}" r="3" fill="${theme.primary}" opacity="0">
-    <animate attributeName="opacity" values="0;0.8;0" dur="2s" repeatCount="indefinite" begin="1.8s"/>
-    <animateMotion dur="6s" repeatCount="indefinite" begin="1.8s" path="M0,0 A${radius},${radius} 0 1,1 -0.1,0"/>
-  </circle>
+    // Card background
+    svg += `<rect x="${x}" y="${y}" width="${cardW}" height="${cardH}" rx="8" fill="${t.surface}" stroke="${t.border}" stroke-width="1"/>`;
 
-  <text x="${cx}" y="${cy + 4}" text-anchor="middle" font-family="'Segoe UI','Inter',Arial,sans-serif" font-size="24" font-weight="700" fill="${theme.highlight}">${skill.percentage}%</text>
+    // Category icon
+    svg += `<text x="${cx}" y="${y + 16}" text-anchor="middle" font-size="12">${cat.icon}</text>`;
 
-  <text x="${cx}" y="${size + 18}" text-anchor="middle" font-family="'Segoe UI','Inter',Arial,sans-serif" font-size="11" fill="${theme.muted}" letter-spacing="0.5">${esc(skill.label)}</text>
-</svg>`;
-}
+    // Category name
+    svg += `<text x="${cx}" y="${y + 30}" text-anchor="middle" class="cat-name">${cat.name}</text>`;
 
-export function generateSkillCircleRow(
-  skills: SkillCircle[],
-  theme: ThemeConfig,
-  circleSize = 150,
-  gap = 24
-): string {
-  const totalWidth = skills.length * circleSize + (skills.length - 1) * gap;
-  const totalHeight = circleSize + 30;
+    // Progress ring — background
+    svg += `<circle cx="${cx}" cy="${cy}" r="${radius}" fill="none" stroke="${t.surfaceAlt}" stroke-width="5"/>`;
 
-  const circles = skills.map((skill, i) => {
-    const x = i * (circleSize + gap);
-    const svg = generateSkillCircle(skill, theme, circleSize);
-    const inner = svg.replace(/<svg[^>]*>/, '').replace(/<\/svg>/, '');
-    return `<g transform="translate(${x}, 0)">${inner}</g>`;
-  }).join('\n  ');
+    // Progress ring — fill
+    svg += `<circle cx="${cx}" cy="${cy}" r="${radius}" fill="none" stroke="${cat.color}" stroke-width="5" stroke-linecap="round"
+      stroke-dasharray="${circumference}" stroke-dashoffset="${circumference}" transform="rotate(-90 ${cx} ${cy})">
+      <animate attributeName="stroke-dashoffset" from="${circumference}" to="${dashOffset}" dur="1.2s" fill="freeze" begin="0.3s"/>
+    </circle>`;
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${totalWidth} ${totalHeight}" width="${totalWidth}" height="${totalHeight}">
-  ${circles}
-</svg>`;
+    // Percentage text
+    svg += `<text x="${cx}" y="${cy + 6}" text-anchor="middle" class="pct-text">${pct}%</text>`;
+
+    // Skills list
+    let sy = y + 120;
+    cat.skills.slice(0, 5).forEach((skill) => {
+      const lvlColor = skill.level === 'Practicing' ? t.primary : t.muted;
+      svg += `<text x="${x + 12}" y="${sy}" class="skill-name">${skill.name}</text>`;
+      svg += `<text x="${x + cardW - 12}" y="${sy}" text-anchor="end" class="skill-level" fill="${lvlColor}">${skill.level}</text>`;
+      sy += 14;
+    });
+
+    // WordPress highlight for Full Stack
+    if (cat.name === 'Full Stack') {
+      svg += `<rect x="${x + 8}" y="${y + cardH - 28}" width="${cardW - 16}" height="20" rx="4" fill="${t.surfaceAlt}" stroke="${cat.color}" stroke-width="0.5" opacity="0.6"/>`;
+      svg += `<text x="${cx}" y="${y + cardH - 14}" text-anchor="middle" font-family="'Segoe UI',system-ui,sans-serif" font-size="8" font-weight="600" fill="${cat.color}">WordPress Focus</text>`;
+    }
+  });
+
+  svg += `</svg>`;
+  return svg;
 }

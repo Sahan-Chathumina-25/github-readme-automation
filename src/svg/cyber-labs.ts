@@ -1,72 +1,122 @@
-import type { ThemeConfig } from '../theme.js';
+import type { ProfileConfig } from '../types';
 
-function esc(str: string): string {
-  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
+export function generateCyberLabs(config: ProfileConfig): string {
+  const W = 800;
+  const t = config.theme;
+  const ctf = config.ctf;
 
-export interface CtfEntry {
-  platform: string;
-  category: string;
-  challenge: string;
-  difficulty: string;
-  skillsLearned: string[];
-}
+  // Build cards from CTF data
+  const cards = ctf.map(entry => ({
+    platform: entry.platform,
+    category: entry.category,
+    description: entry.challenge,
+    difficulty: entry.difficulty,
+    skills: entry.skillsLearned,
+  }));
 
-export function generateCyberLabs(ctf: CtfEntry[], theme: ThemeConfig): string {
-  if (ctf.length === 0) return '';
+  // Also add category cards for security practice areas
+  const categories = [
+    { name: 'Network Security', desc: 'Firewall configuration, traffic analysis, network monitoring', tools: ['firewalld', 'Wireshark', 'tcpdump'] },
+    { name: 'Web Security', desc: 'Web application security, HTTP analysis, security testing', tools: ['Burp Suite', 'OWASP', 'HTTP'] },
+    { name: 'Security Automation', desc: 'Python scripts for scanning, port detection, automation', tools: ['Python', 'Nmap', 'Bash'] },
+  ];
 
-  const w = 700;
-  const cardH = 72;
-  const gap = 10;
-  const pad = 24;
-  const totalH = ctf.length * (cardH + gap) + pad * 2;
+  const cardW = 230;
+  const cardH = 120;
+  const gap = 20;
+  const cols = 3;
+  const totalW = cols * cardW + (cols - 1) * gap;
+  const startX = (W - totalW) / 2;
+  const headerH = 50;
+  const catH = 100;
+  const catGap = 16;
+  const totalCategoriesH = categories.length * catH + (categories.length - 1) * catGap;
+  const totalCardsH = cards.length > 0 ? cardH + 20 : 0;
+  const H = headerH + totalCategoriesH + 30 + totalCardsH + 40;
 
-  const diffWidth = (d: string): number => {
-    if (d.includes('Hard') || d.includes('Advanced')) return 90;
-    if (d.includes('Medium')) return 60;
-    return 35;
-  };
+  let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}">`;
+  svg += `<defs>`;
+  svg += `<style>
+    @keyframes statusPulse { 0%,100%{opacity:0.6} 50%{opacity:1} }
+    .card-title { font-family:'Segoe UI',system-ui,sans-serif; font-size:13px; font-weight:600; fill:${t.highlight}; }
+    .card-desc { font-family:'Segoe UI',system-ui,sans-serif; font-size:10px; fill:${t.muted}; }
+    .tool-pill { font-family:'Segoe UI',system-ui,sans-serif; font-size:9px; fill:${t.primary}; }
+    .section-label { font-family:'Segoe UI',system-ui,sans-serif; font-size:10px; font-weight:600; letter-spacing:1.5px; }
+    .diff-text { font-family:'Segoe UI',system-ui,sans-serif; font-size:9px; }
+  </style>`;
+  svg += `</defs>`;
 
-  const cards = ctf.map((entry, i) => {
-    const y = pad + i * (cardH + gap);
-    const delay = i * 0.15;
-    const dw = diffWidth(entry.difficulty);
+  // Background
+  svg += `<rect width="${W}" height="${H}" fill="${t.background}" rx="8"/>`;
 
-    return `
-  <g opacity="0" transform="translate(0, 8)">
-    <animate attributeName="opacity" values="0;1" dur="0.5s" begin="${delay}s" fill="freeze"/>
-    <animateTransform attributeName="transform" type="translate" values="0 8;0 0" dur="0.5s" begin="${delay}s" fill="freeze"/>
+  // Header
+  svg += `<text x="40" y="32" font-family="'Segoe UI',system-ui,sans-serif" font-size="14" font-weight="700" fill="${t.highlight}">CYBERSECURITY LAB</text>`;
+  svg += `<text x="40" y="46" font-family="'Segoe UI',system-ui,sans-serif" font-size="10" fill="${t.muted}">Security Practice &amp; Offensive/Defensive Lab</text>`;
 
-    <rect x="${pad}" y="${y}" width="${w - pad * 2}" height="${cardH}" rx="10" fill="${theme.surface}" opacity="0.85"/>
-    <rect x="${pad}" y="${y}" width="${w - pad * 2}" height="${cardH}" rx="10" fill="none" stroke="${theme.border}" stroke-width="0.5"/>
+  // Category cards — 3 across
+  let catY = headerH + 10;
+  categories.forEach((cat, i) => {
+    const x = startX + i * (cardW + gap);
+    const y = catY;
 
-    <rect x="${pad}" y="${y + 10}" width="3" height="${cardH - 20}" rx="1.5" fill="${theme.secondary}" opacity="0.6"/>
+    svg += `<rect x="${x}" y="${y}" width="${cardW}" height="${catH}" rx="6" fill="${t.surface}" stroke="${t.border}" stroke-width="1"/>`;
+    svg += `<rect x="${x}" y="${y}" width="3" height="${catH}" rx="1.5" fill="${t.primary}" opacity="0.6"/>`;
+    svg += `<text x="${x + 14}" y="${y + 20}" class="card-title">${cat.name}</text>`;
+    svg += `<text x="${x + 14}" y="${y + 36}" class="card-desc">${cat.desc}</text>`;
 
-    <text x="${pad + 16}" y="${y + 22}" font-family="'SF Mono','Cascadia Code','Consolas',monospace" font-size="9" fill="${theme.secondary}" letter-spacing="1" opacity="0.7">CTF ${String(i + 1).padStart(2, '0')}</text>
-    <text x="${pad + 16}" y="${y + 40}" font-family="'Segoe UI','Inter',Arial,sans-serif" font-size="14" font-weight="600" fill="${theme.highlight}">${esc(entry.category)}</text>
-    <text x="${pad + 16}" y="${y + 56}" font-family="'Segoe UI','Inter',Arial,sans-serif" font-size="10" fill="${theme.muted}">${esc(entry.platform)}  •  ${esc(entry.challenge)}</text>
+    // Tool pills
+    let pillX = x + 14;
+    cat.tools.forEach((tool) => {
+      const pillW = tool.length * 5.5 + 12;
+      svg += `<rect x="${pillX}" y="${y + catH - 28}" width="${pillW}" height="18" rx="9" fill="${t.surfaceAlt}" stroke="${t.border}" stroke-width="0.5"/>`;
+      svg += `<text x="${pillX + pillW / 2}" y="${y + catH - 16}" text-anchor="middle" class="tool-pill">${tool}</text>`;
+      pillX += pillW + 6;
+    });
+  });
 
-    <text x="${pad + 16}" y="${y + 68}" font-family="'SF Mono','Consolas',monospace" font-size="8" fill="${theme.muted}" opacity="0.6">DIFFICULTY</text>
-    <rect x="${pad + 80}" y="${y + 61}" width="100" height="4" rx="2" fill="${theme.surfaceAlt}"/>
-    <rect x="${pad + 80}" y="${y + 61}" width="${dw}" height="4" rx="2" fill="${theme.primary}" opacity="0.7">
-      <animate attributeName="width" from="0" to="${dw}" dur="0.8s" begin="${delay + 0.3}s" fill="freeze"/>
-    </rect>
+  // CTF Cards section
+  if (cards.length > 0) {
+    const ctfY = catY + totalCategoriesH + 20;
+    svg += `<text x="40" y="${ctfY}" class="section-label" fill="${t.muted}">CTF / SECURITY CHALLENGES</text>`;
 
-    ${entry.skillsLearned.slice(0, 3).map((sk, si) => {
-      const sx = w - pad - 20 - si * 85;
-      const sw = sk.length * 6.5 + 16;
-      return `
-    <rect x="${sx - sw + 85}" y="${y + 12}" width="${sw}" height="20" rx="10" fill="${theme.surfaceAlt}" stroke="${theme.border}" stroke-width="0.5"/>
-    <text x="${sx - sw + 85 + sw / 2}" y="${y + 26}" text-anchor="middle" font-family="'SF Mono','Consolas',monospace" font-size="8" fill="${theme.muted}">${esc(sk)}</text>`;
-    }).join('')}
+    cards.forEach((card, i) => {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      const x = startX + col * (cardW + gap);
+      const y = ctfY + 16 + row * (cardH + gap);
 
-    <circle cx="${w - pad - 16}" cy="${y + cardH / 2}" r="4" fill="${theme.success}" opacity="0.7">
-      <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite" begin="${delay + 0.5}s"/>
-    </circle>
-  </g>`;
-  }).join('');
+      svg += `<rect x="${x}" y="${y}" width="${cardW}" height="${cardH}" rx="6" fill="${t.surface}" stroke="${t.border}" stroke-width="1"/>`;
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${totalH}" width="${w}" height="${totalH}">
-  ${cards}
-</svg>`;
+      // Platform badge
+      svg += `<rect x="${x + 10}" y="${y + 10}" width="${card.platform.length * 5.5 + 12}" height="18" rx="9" fill="${t.surfaceAlt}" stroke="${t.border}" stroke-width="0.5"/>`;
+      svg += `<text x="${x + 16}" y="${y + 22}" class="tool-pill">${card.platform}</text>`;
+
+      // Category
+      svg += `<text x="${x + 10}" y="${y + 44}" class="card-title" font-size="11">${card.category}</text>`;
+
+      // Description
+      svg += `<text x="${x + 10}" y="${y + 60}" class="card-desc">${card.description}</text>`;
+
+      // Difficulty bar
+      const diffW = cardW - 20;
+      const diffH = 4;
+      const diffY = y + cardH - 30;
+      svg += `<rect x="${x + 10}" y="${diffY}" width="${diffW}" height="${diffH}" rx="2" fill="${t.surfaceAlt}"/>`;
+      const fillW = card.difficulty.includes('Medium') ? diffW * 0.6 : diffW * 0.3;
+      svg += `<rect x="${x + 10}" y="${diffY}" width="${fillW}" height="${diffH}" rx="2" fill="${t.primary}" opacity="0.6"/>`;
+      svg += `<text x="${x + 10}" y="${diffY + 14}" class="diff-text" fill="${t.muted}">${card.difficulty}</text>`;
+
+      // Skills
+      let skX = x + diffW + 16;
+      card.skills.slice(0, 2).forEach((sk) => {
+        const skW = sk.length * 5 + 10;
+        svg += `<rect x="${skX}" y="${diffY + 4}" width="${skW}" height="14" rx="7" fill="${t.surfaceAlt}" stroke="${t.border}" stroke-width="0.5"/>`;
+        svg += `<text x="${skX + skW / 2}" y="${diffY + 14}" text-anchor="middle" font-family="'Segoe UI',system-ui,sans-serif" font-size="7" fill="${t.muted}">${sk}</text>`;
+        skX += skW + 4;
+      });
+    });
+  }
+
+  svg += `</svg>`;
+  return svg;
 }
