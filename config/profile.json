@@ -1,0 +1,247 @@
+{
+  "profile": {
+    "name": "Sahan Chathumina",
+    "username": "Sahan-Chathumina-25",
+    "headline": "Cybersecurity | Network Engineering | Linux | Ethical Hacking",
+    "location": "Sri Lanka",
+    "about": "Building secure systems. Exploring networks. Learning cybersecurity through hands-on projects.\n\nI am an undergraduate studying Ethical Hacking & Network Security with a passion for understanding how systems work and how to secure them. I spend my time in Linux labs, building networks, solving CTF challenges, and writing scripts to automate security tasks.\n\n- Exploring network security and system hardening\n- Building hands-on Linux and networking labs\n- Solving CTF challenges to sharpen my skills\n- Writing Python and Bash automation scripts"
+  },
+
+  "education": [
+    {
+      "degree": "BSc (Hons) in Ethical Hacking & Network Security",
+      "institution": "University",
+      "status": "In Progress",
+      "year": "2024 - Present"
+    },
+    {
+      "degree": "Higher National Diploma in Network Engineering",
+      "institution": "Institute of Network Engineering",
+      "status": "In Progress",
+      "year": "2023 - Present"
+    }
+  ],
+
+  "certifications": [
+    {
+      "name": "Red Hat System Administration I",
+      "provider": "Red Hat",
+      "status": "Completed",
+      "year": "2026"
+    },
+    {
+      "name": "CCNA: Introduction to Networks",
+      "provider": "Cisco",
+      "status": "In Progress",
+      "year": "2026"
+    }
+  ],
+
+  "skills": {
+    "cybersecurity": [
+      { "name": "Ethical Hacking", "level": "Learning" },
+      { "name": "Network Security", "level": "Learning" },
+      { "name": "Vulnerability Assessment", "level": "Learning" },
+      { "name": "Security Hardening", "level": "Practicing" },
+      { "name": "OSINT", "level": "Learning" },
+      { "name": "CTF", "level": "Practicing" },
+      { "name": "Web Security", "level": "Learning" },
+      { "name": "Digital Forensics", "level": "Learning" }
+    ],
+    "networking": [
+      { "name": "TCP/IP", "level": "Practicing" },
+      { "name": "DNS", "level": "Practicing" },
+      { "name": "DHCP", "level": "Practicing" },
+      { "name": "HTTP/HTTPS", "level": "Practicing" },
+      { "name": "Routing & Switching", "level": "Learning" },
+      { "name": "VLAN", "level": "Learning" },
+      { "name": "Subnetting", "level": "Practicing" },
+      { "name": "Firewalls", "level": "Learning" },
+      { "name": "VPN", "level": "Learning" },
+      { "name": "Cisco Networking", "level": "Learning" }
+    ],
+    "linux": [
+      { "name": "Linux", "level": "Practicing" },
+      { "name": "CentOS", "level": "Practicing" },
+      { "name": "Rocky Linux", "level": "Learning" },
+      { "name": "SSH", "level": "Practicing" },
+      { "name": "Apache", "level": "Practicing" },
+      { "name": "BIND DNS", "level": "Practicing" },
+      { "name": "firewalld", "level": "Practicing" },
+      { "name": "systemd", "level": "Practicing" },
+      { "name": "Bash", "level": "Practicing" },
+      { "name": "Server Hardening", "level": "Learning" },
+      { "name": "SELinux", "level": "Learning" },
+      { "name": "Auditd", "level": "Learning" }
+    ],
+    "programming": [
+      { "name": "Python", "level": "Practicing" },
+      { "name": "Bash", "level": "Practicing" },
+      { "name": "JavaScript", "level": "Learning" },
+      { "name": "HTML/CSS", "level": "Practicing" },
+      { "name": "PHP", "level": "Learning" },
+      { "name": "MySQL", "level": "Learning" }
+    ],
+    "tools": [
+      { "name": "Git", "level": "Practicing" },
+      { "name": "GitHub", "level": "Practicing" },
+      { "name": "Wireshark", "level": "Learning" },
+      { "name": "Nmap", "level": "Learning" },
+      { "name": "Metasploit", "level": "Learning" },
+      { "name": "Burp Suite", "level": "Learning" },
+      { "name": "VMware", "level": "Practicing" }
+    ]
+  },
+
+  "projects": [
+    {
+      "name": "Network Security Lab",
+      "description": "Hands-on environment for practicing network security, Linux administration, DNS, DHCP, and server hardening.",
+      "technologies": ["Linux", "Networking", "DNS", "DHCP", "Bash"],
+      "category": "Cybersecurity",
+      "status": "In Progress",
+      "featured": true
+    },
+    {
+      "name": "Linux Server Hardening",
+      "description": "Server hardening lab covering SSH security, firewall rules, SELinux, audit logging, and system monitoring.",
+      "technologies": ["Linux", "SSH", "firewalld", "SELinux", "Auditd"],
+      "category": "Linux",
+      "status": "In Progress",
+      "featured": true
+    },
+    {
+      "name": "DNS & DHCP Lab",
+      "description": "Configured BIND DNS and ISC DHCP servers on CentOS with zone transfers and dynamic updates.",
+      "technologies": ["Linux", "BIND", "DHCP", "CentOS", "Networking"],
+      "category": "Networking",
+      "status": "Completed",
+      "featured": true
+    },
+    {
+      "name": "Python Security Scripts",
+      "description": "Collection of Python scripts for network scanning, port detection, and security automation tasks.",
+      "technologies": ["Python", "Networking", "Security"],
+      "category": "Automation",
+      "status": "In Progress",
+      "featured": true
+    },
+    {
+      "name": "Firewall Configuration Lab",
+      "description": "Practicing firewall rules with firewalld, iptables, and network segmentation scenarios.",
+      "technologies": ["Linux", "firewalld", "Networking", "Security"],
+      "category": "Networking",
+      "status": "Learning",
+      "featured": true
+    },
+    {
+      "name": "Web Application Security Lab",
+      "description": "Hands-on practice with common web vulnerabilities in a controlled lab environment.",
+      "technologies": ["Web Security", "HTTP", "Burp Suite"],
+      "category": "Cybersecurity",
+      "status": "Learning",
+      "featured": true
+    }
+  ],
+
+  "ctf": [
+    {
+      "platform": "TryHackMe",
+      "category": "Web Exploitation",
+      "challenge": "Various web security challenges",
+      "difficulty": "Easy - Medium",
+      "skillsLearned": ["SQL Injection", "XSS", "Web Enumeration"]
+    },
+    {
+      "platform": "TryHackMe",
+      "category": "Forensics",
+      "challenge": "File analysis and memory forensics",
+      "difficulty": "Easy",
+      "skillsLearned": ["File Analysis", "Memory Forensics", "Log Analysis"]
+    },
+    {
+      "platform": "PicoCTF",
+      "category": "Cryptography",
+      "challenge": "Basic cryptography challenges",
+      "difficulty": "Easy - Medium",
+      "skillsLearned": ["Encoding", "Basic Crypto", "Problem Solving"]
+    }
+  ],
+
+  "labs": [
+    {
+      "name": "SSH Security Lab",
+      "technology": ["Linux", "SSH"],
+      "objective": "Configure SSH key-based auth, disable root login, implement fail2ban",
+      "status": "Completed",
+      "repository": ""
+    },
+    {
+      "name": "DNS Server Lab",
+      "technology": ["Linux", "BIND", "DNS"],
+      "objective": "Set up BIND DNS master/slave with zone transfers",
+      "status": "Completed",
+      "repository": ""
+    },
+    {
+      "name": "DHCP Server Lab",
+      "technology": ["Linux", "DHCP"],
+      "objective": "Configure ISC DHCP with reservations and relay agents",
+      "status": "Completed",
+      "repository": ""
+    },
+    {
+      "name": "Firewall Rules Lab",
+      "technology": ["Linux", "firewalld", "Networking"],
+      "objective": "Implement zone-based firewall rules and NAT",
+      "status": "In Progress",
+      "repository": ""
+    },
+    {
+      "name": "Apache Web Server Lab",
+      "technology": ["Linux", "Apache"],
+      "objective": "Configure virtual hosts, SSL/TLS, and access controls",
+      "status": "Completed",
+      "repository": ""
+    },
+    {
+      "name": "SELinux Lab",
+      "technology": ["Linux", "SELinux"],
+      "objective": "Configure SELinux policies and troubleshoot denials",
+      "status": "Learning",
+      "repository": ""
+    },
+    {
+      "name": "Subnetting Practice",
+      "technology": ["Networking", "Subnetting"],
+      "objective": "Practice VLSM subnetting and IP address planning",
+      "status": "In Progress",
+      "repository": ""
+    },
+    {
+      "name": "VLAN Configuration Lab",
+      "technology": ["Networking", "VLAN", "Switching"],
+      "objective": "Configure VLANs, trunk ports, and inter-VLAN routing",
+      "status": "Planned",
+      "repository": ""
+    }
+  ],
+
+  "social": {
+    "github": "Sahan-Chathumina-25",
+    "linkedin": "",
+    "email": ""
+  },
+
+  "currentlyLearning": [
+    "Cybersecurity Fundamentals",
+    "Network Security",
+    "Linux System Administration",
+    "Ethical Hacking",
+    "CTF Challenges",
+    "Python for Security Automation",
+    "Cloud & Infrastructure Security"
+  ],
+
+  "featuredRepos": []
+}

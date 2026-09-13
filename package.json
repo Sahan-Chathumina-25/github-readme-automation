@@ -1,0 +1,29 @@
+{
+  "name": "github-readme-automation",
+  "version": "1.0.0",
+  "description": "Automated GitHub Profile README Generator for cybersecurity professionals",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "generate": "node --loader ts-node/esm src/index.ts generate",
+    "preview": "node --loader ts-node/esm src/index.ts preview",
+    "update": "node --loader ts-node/esm src/index.ts update",
+    "validate": "node --loader ts-node/esm src/index.ts validate",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "tsc --noEmit"
+  },
+  "keywords": ["github", "readme", "automation", "cybersecurity", "profile"],
+  "author": "Sahan Chathumina",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7"
+  }
+}
