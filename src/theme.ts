@@ -30,7 +30,6 @@ export interface SkillPercentages {
   cybersecurity: number;
   networking: number;
   linux: number;
-  programming: number;
   fullstack: number;
 }
 

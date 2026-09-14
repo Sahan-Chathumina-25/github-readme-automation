@@ -17,7 +17,7 @@ export function generateSkillCircles(config: ProfileConfig): string {
     { name: 'Cybersecurity', skills: config.skills.cybersecurity, color: t.primary, icon: '🛡' },
     { name: 'Networking', skills: config.skills.networking, color: t.secondary, icon: '🌐' },
     { name: 'Linux & Systems', skills: config.skills.linux, color: t.success, icon: '⚙' },
-    { name: 'Full Stack', skills: config.skills.programming, color: '#FFB800', icon: '⚡' },
+    { name: 'Full Stack', skills: config.skills.fullstack, color: '#FFB800', icon: '⚡' },
   ];
 
   const cardW = 148;

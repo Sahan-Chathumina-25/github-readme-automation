@@ -120,9 +120,9 @@ function renderSkills(config: ProfileConfig): string {
     md += skills.linux.map((s) => shieldBadge(s.name, s.level, s.level === 'Practicing' ? 'cyan' : 'blue')).join(' ');
     md += '\n\n';
   }
-  if (skills.programming.length > 0) {
+  if (skills.fullstack.length > 0) {
     md += `### Full Stack Development\n\n`;
-    md += skills.programming.map((s) => shieldBadge(s.name, s.level, s.level === 'Practicing' ? 'cyan' : 'blue')).join(' ');
+    md += skills.fullstack.map((s: any) => shieldBadge(s.name, s.level, s.level === 'Practicing' ? 'cyan' : 'blue')).join(' ');
     md += '\n\n';
   }
   if (skills.tools.length > 0) {

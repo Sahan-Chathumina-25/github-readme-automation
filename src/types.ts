@@ -43,7 +43,7 @@ export interface Skills {
   cybersecurity: SkillItem[];
   networking: SkillItem[];
   linux: SkillItem[];
-  programming: SkillItem[];
+  fullstack: SkillItem[];
   tools: SkillItem[];
 }
 

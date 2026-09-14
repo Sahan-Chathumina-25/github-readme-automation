@@ -40,10 +40,10 @@ function generateAssets(config: ProfileConfig, theme: ThemeConfig, skillPcts: Sk
   writeFileSync(join(ASSETS_DIR, 'profile-banner.svg'), banner, 'utf-8');
   console.log('  Generated assets/profile-banner.svg');
 
-  // Skill circles
+  // Skill overview (circles with percentages)
   const skillCircles = generateSkillCircles(config);
-  writeFileSync(join(ASSETS_DIR, 'skill-circles.svg'), skillCircles, 'utf-8');
-  console.log('  Generated assets/skill-circles.svg');
+  writeFileSync(join(ASSETS_DIR, 'skill-overview.svg'), skillCircles, 'utf-8');
+  console.log('  Generated assets/skill-overview.svg');
 
   // Network topology (legacy, kept as fallback)
   const topology = generateNetworkTopology(theme);
@@ -62,8 +62,8 @@ function generateAssets(config: ProfileConfig, theme: ThemeConfig, skillPcts: Sk
 
   // About card
   const aboutCard = generateAboutCard(config);
-  writeFileSync(join(ASSETS_DIR, 'about-card.svg'), aboutCard, 'utf-8');
-  console.log('  Generated assets/about-card.svg');
+  writeFileSync(join(ASSETS_DIR, 'about-me.svg'), aboutCard, 'utf-8');
+  console.log('  Generated assets/about-me.svg');
 
   // Terminal
   const terminal = generateTerminal(config);
@@ -87,13 +87,13 @@ function generateAssets(config: ProfileConfig, theme: ThemeConfig, skillPcts: Sk
 
   // Network labs
   const networkLabs = generateNetworkLabs(config);
-  writeFileSync(join(ASSETS_DIR, 'network-labs.svg'), networkLabs, 'utf-8');
-  console.log('  Generated assets/network-labs.svg');
+  writeFileSync(join(ASSETS_DIR, 'networking-labs.svg'), networkLabs, 'utf-8');
+  console.log('  Generated assets/networking-labs.svg');
 
   // Certifications
   const certs = generateCertifications(config);
-  writeFileSync(join(ASSETS_DIR, 'certifications.svg'), certs, 'utf-8');
-  console.log('  Generated assets/certifications.svg');
+  writeFileSync(join(ASSETS_DIR, 'certifications-new.svg'), certs, 'utf-8');
+  console.log('  Generated assets/certifications-new.svg');
 
   // Footer
   const footer = generateFooter(config);
@@ -113,12 +113,19 @@ async function main() {
     case 'generate': {
       console.log('Loading profile configuration...');
       const config = loadConfig();
+      console.log('Config loaded successfully');
 
       const theme: ThemeConfig = (config as any).theme ?? DEFAULT_THEME;
-      const skillPcts: SkillPercentages = (config as any).skillPercentages ?? { cybersecurity: 45, networking: 50, linux: 55, programming: 35, fullstack: 30 };
+      const skillPcts: SkillPercentages = (config as any).skillPercentages ?? { cybersecurity: 45, networking: 60, linux: 60, fullstack: 75 };
 
       console.log('Generating visual assets...');
-      generateAssets(config, theme, skillPcts);
+      try {
+        generateAssets(config, theme, skillPcts);
+        console.log('Assets generated successfully');
+      } catch (err) {
+        console.error('Error generating assets:', err);
+        process.exit(1);
+      }
 
       let githubData = undefined;
       if (token) {
@@ -206,7 +213,7 @@ async function main() {
       console.log('Generating README for update...');
       const config = loadConfig();
       const theme: ThemeConfig = (config as any).theme ?? DEFAULT_THEME;
-      const skillPcts: SkillPercentages = (config as any).skillPercentages ?? { cybersecurity: 45, networking: 50, linux: 55, programming: 35, fullstack: 30 };
+      const skillPcts: SkillPercentages = (config as any).skillPercentages ?? { cybersecurity: 45, networking: 60, linux: 60, fullstack: 75 };
 
       let githubData = undefined;
       try {
@@ -237,6 +244,6 @@ async function main() {
 }
 
 main().catch((err) => {
-  console.error('Fatal error:', (err as Error).message);
+  console.error('Fatal error:', err);
   process.exit(1);
 });
